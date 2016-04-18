@@ -1,3 +1,7 @@
+# Split light curve into windows, build a GP model for each window,
+# then correlate the GP models pair-wize for corresponding windows
+# from the two light curves
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import correlate

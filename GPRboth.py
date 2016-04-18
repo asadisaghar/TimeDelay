@@ -1,3 +1,7 @@
+# Merge all the observations of light curve A and B, with observations
+# from B offset by the dt from the ground truth table. Then fit a GP
+# model to the resulting dataset and plot it.
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import correlate

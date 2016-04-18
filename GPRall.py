@@ -1,3 +1,6 @@
+# Fit a GP to each of the light curves as a whole, then correlate the
+# two models.
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import correlate
@@ -72,7 +75,9 @@ for pairNo, tau, sig, dt_true in zip(pairNos, taus, sigs, dt_trues):
     fig.suptitle('PairNo: ' + str(pairNo) +
               ' - true time delay: ' + str(dt_true) +
               ' - maximum correlation at: ' + str(t_maxcorr))
-    
+
+    axA.legend()
+    axB.legend()
     plt.show()
 
 '''
