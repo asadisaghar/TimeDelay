@@ -84,6 +84,9 @@ for i in xrange(0, len(truths)):
         pairs[field][filt] = truths[field][i]
 
 
+pairs = append_fields(pairs, 'full_pair_id', [], dtypes='<f8')
+pairs['full_pair_id'] = pairs['pair'] + pairs['rung'] * 10000 + pairs['tdc'] * 100000
+
 savez('pairs_with_truths.npz', pairs)
 
 
