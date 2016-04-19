@@ -70,8 +70,8 @@ savez('truths.npz', truths)
 
 for field in ("dt", "m1", "m2", "zl", "zs", "id", "tau", "sig"):
     pairs = append_fields(pairs, field, [], dtypes='<f4', fill_value=nan)
+pairs = append_fields(pairs, 'full_pair_id', [], dtypes='<f8')
 pairs = pairs.filled()
-
 
 for i in xrange(0, len(truths)):
     tdc = truths[i]['tdc']
@@ -83,11 +83,6 @@ for i in xrange(0, len(truths)):
     for field in ("dt", "m1", "m2", "zl", "zs", "id", "tau", "sig"):
         pairs[field][filt] = truths[field][i]
 
-
-pairs = append_fields(pairs, 'full_pair_id', [], dtypes='<f8')
 pairs['full_pair_id'] = pairs['pair'] + pairs['rung'] * 10000 + pairs['tdc'] * 100000
 
 savez('pairs_with_truths.npz', pairs)
-
-
-
