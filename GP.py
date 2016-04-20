@@ -10,22 +10,26 @@ from timedelay.gp import *
 from timedelay.sampling_windows import *
 from timedelay.correlation import *
 from timedelay.plotting import *
+import cPickle as pickle
 
-do_plot = True
-N_eval = 5000
+do_plot = False
+N_eval = 500
 dt = 0.1 #day
 data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0']
-pair_ids = np.unique(data['full_pair_id'])[:1] # Remove [:5] for real run
-
+pair_ids = np.unique(data['full_pair_id']) # Remove [:5] for real run
+print len(pair_ids)
+quad_pair_ids = pair_ids[pair_ids % 1.0 == 0.5] # Finde file A of a quadratic system
+print len(quad_pair_ids)
+quad_pair_ids = np.append(quad_pair_ids, quad_pair_ids - 0.5) # Finds file B of the same quadratic system
+print len(quad_pair_ids)
+pair_ids = np.setdiff1d(pair_ids, quad_pair_ids) # Removes all quadratic systems from pair_ids
 # Fit GP model to each sampling window of the data separately
-dt_preds = []
 
 for pair_id in pair_ids:
     pair_data = data[data['full_pair_id'] == pair_id]
 
     tau = pair_data[0]['tau']
     sig = pair_data[0]['sig']
-    dt_true = pair_data[0]['dt']
 
     print "loading data from pair %s" % pair_id
 
@@ -36,9 +40,9 @@ for pair_id in pair_ids:
     t_eval = np.zeros((N_eval * len(windows), 1))
 
     if do_plot:
-        figA, axsA = plt.subplots(len(windows), 1, figsize=(5, 10), sharey=True)#, sharey=True)
+        figA, axsA = plt.subplots(len(windows), 1, figsize=(5, 10), sharey=True)
         axsA = axsA.flatten()
-        figB, axsB = plt.subplots(len(windows), 1, figsize=(5, 10), sharey=True)#, sharey=True)
+        figB, axsB = plt.subplots(len(windows), 1, figsize=(5, 10), sharey=True)
         axsB = axsB.flatten()
 
     for i, window in enumerate(windows):
@@ -52,64 +56,54 @@ for pair_id in pair_ids:
         XA = XA.reshape((len(XA), 1))
         fA = (window_data['lcA'] - np.mean(window_data['lcA'])) / np.std(window_data['lcA'])
         dfA = (window_data['errA'] - np.mean(window_data['errA'])) / np.std(window_data['errA'])
-        # modelA[N_eval*i:N_eval*(i+1), 0], modelA[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
-        #                                                                                   t_eval[N_eval*i:N_eval*(i+1)], 
-        #                                                                                   XA, fA, dfA,
-        #                                                                                   theta0=sig,
-        #                                                                                   thetaL=tau,
-        #                                                                                   thetaU=tau) # image A
+        gpA, modelA[N_eval*i:N_eval*(i+1), 0], modelA[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
+                                                                                               t_eval[N_eval*i:N_eval*(i+1)], 
+                                                                                               XA, fA, dfA,
+                                                                                               theta0=sig,
+                                                                                               thetaL=tau,
+                                                                                               thetaU=tau) # image A
+
+        with open("%sA.pkl"%(window), "wb") as f:
+            pickle.dump(gpA, f)
 
         # find the best-fit model for LC B
         XB = window_data['time'].T
         XB = XB.reshape((len(XB), 1))
         fB = (window_data['lcB'] - np.mean(window_data['lcB'])) / np.std(window_data['lcB'])
         dfB = (window_data['errB'] - np.mean(window_data['errB'])) / np.std(window_data['errB'])
-        # modelB[N_eval*i:N_eval*(i+1), 0], modelB[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
-        #                                                                                   t_eval[N_eval*i:N_eval*(i+1)], 
-        #                                                                                   XB, fB, dfB,
-        #                                                                                   theta0=sig,
-        #                                                                                   thetaL=tau,
-        #                                                                                   thetaU=tau) # image B
+        gpB, modelB[N_eval*i:N_eval*(i+1), 0], modelB[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
+                                                                                               t_eval[N_eval*i:N_eval*(i+1)], 
+                                                                                               XB, fB, dfB,
+                                                                                               theta0=sig,
+                                                                                               thetaL=tau,
+                                                                                               thetaU=tau) # image B
+        with open("%sB.pkl"%(window), "wb") as f:
+            pickle.dump(gpB, f)
+            
 
-        # # Cross correlate the two models
-        # ind_maxcorr, corr = cross_correlate_models(modelA[N_eval*i:N_eval*(i+1), 0],
-        #                                            modelB[N_eval*i:N_eval*(i+1), 0])
-
-        # maxcorr = t_eval[ind_maxcorr]
-        # if corr[ind_maxcorr] < 0:
-        #     t_maxcorr[i] = -maxcorr[0][0]
-        # else:
-        #     t_maxcorr[i] = maxcorr[0][0]
     
         ###  plot_model(pair_id, dt, x, y_pred, sigma, ob)   
         if do_plot:
             axsA[i] = plot_data(axsA[i], pair_id, 0, XA, fA, dfA, "A") #A
-            # axsA[i] = plot_model(axsA[i], pair_id, 0, 
-            #                      t_eval[N_eval*i:N_eval*(i+1)], 
-            #                      modelA[N_eval*i:N_eval*(i+1), 0], 
-            #                      modelA[N_eval*i:N_eval*(i+1), 1],
-            #                      "A ") #A
+            axsA[i] = plot_model(axsA[i], pair_id, 0, 
+                                 t_eval[N_eval*i:N_eval*(i+1)], 
+                                 modelA[N_eval*i:N_eval*(i+1), 0], 
+                                 modelA[N_eval*i:N_eval*(i+1), 1],
+                                 "A ") #A
     
             axsB[i] = plot_data(axsB[i], pair_id, 0, XB, fB, dfB, "B") #B
-            # axsB[i] = plot_model(axsB[i], pair_id, 0, 
-            #                      t_eval[N_eval*i:N_eval*(i+1)], 
-            #                      modelB[N_eval*i:N_eval*(i+1), 0], 
-            #                      modelB[N_eval*i:N_eval*(i+1), 1],
-            #                      "B ") #B
-    
-    # dt_preds.append(np.mean(t_maxcorr))
-    
-    # if do_plot:
-        # figA.suptitle("Lightcurve A \n Estimated time delay: " + 
-        #               str(np.mean(t_maxcorr)) + 
-        #               " days")
-        # figB.suptitle("Lightcurve B \n True time delay: " + 
-        #               str(dt_true) + 
-        #               " days")
-        # figA.savefig("pair" + str(pair_id) + "_A.png")
-        # figB.savefig("pair" + str(pair_id) + "_B.png")
+            axsB[i] = plot_model(axsB[i], pair_id, 0, 
+                                 t_eval[N_eval*i:N_eval*(i+1)], 
+                                 modelB[N_eval*i:N_eval*(i+1), 0], 
+                                 modelB[N_eval*i:N_eval*(i+1), 1],
+                                 "B ") #B
+            
+    if do_plot:
+        figA.suptitle("Lightcurve A") 
+        figB.suptitle("Lightcurve B")
+        figA.savefig("pair" + str(pair_id) + "_A.png")
+        figB.savefig("pair" + str(pair_id) + "_B.png")
 
-#np.save("dt_preds", dt_preds)
 plt.show()
 
 

@@ -63,5 +63,6 @@ target/
 *.npz
 *.npy
 *.png
+*.pkl
 
 *~
