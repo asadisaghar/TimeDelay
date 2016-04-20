@@ -56,6 +56,7 @@ def evenly_sample_window(window_data, dt):
 def resample_using_gp_models(data, pair_ids, dt=0.1):
     outdata = None
     for pair_id in pair_ids:
+        print "Resampling pair %s" % pair_id
         pair_data = data[data['full_pair_id'] == pair_id]
         tau = pair_data[0]['tau']
         sig = pair_data[0]['sig']
@@ -65,6 +66,7 @@ def resample_using_gp_models(data, pair_ids, dt=0.1):
 
         windows = np.unique(pair_data['window_id'])
         for i, window in enumerate(windows):
+            print "    window %s" % window
             window_data = pair_data[pair_data['window_id'] == window]
             t_eval = evenly_sample_window(window_data, dt)
             sig_evalA, sig_errA = eval_signal_from_GP_model(str(window) + "A", t_eval)
