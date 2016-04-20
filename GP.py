@@ -12,26 +12,25 @@ from timedelay.correlation import *
 from timedelay.plotting import *
 
 do_plot = False
+N_eval = 5000
+
+data = np.load("pairs_with_truths_and_windows.npz")['arr_0']
+pair_ids = np.unique(data['full_pair_id'])[:5] # Remove [:5] for real run
 
 # Fit GP model to each sampling window of the data separately
-N_eval = 5000
-path = "tdc1/rung3/"
-truth = np.loadtxt(path + "truth3.txt", skiprows=1,
-                   dtype={"names":("pairfile", "dt", "m1", "m2", "zl", "zs", "id", "tau", "sig"),
-                          "formats":("S30", "f4", "f4", "f4", "f4", "f4", "f4", "f4", "f4")})
-
-pairNos = np.arange(1, 720, 1)
-dt_trues = truth["dt"]
-taus = truth["tau"]
-sigs = truth["sig"]
 dt_preds = []
-for pairNo, tau, sig, dt_true in zip(pairNos, taus, sigs, dt_trues):
-    print "loading data from pair" + str(pairNo)
-    lightcurve = np.loadtxt(path + "tdc1_rung3_double_pair%d.txt"%(pairNo),
-                            skiprows=6, dtype={"names":("time", "lcA", "errA", "lcB", "errB"), 
-                                               "formats":("f4", "f4", "f4", "f4", "f4")})
 
-    windows = pick_sampling_windows(lightcurve['time'])
+for pair_id in pair_ids:
+    pair_data = data[data['full_pair_id'] == pair_id]
+
+    tau = pair_data[0]['tau']
+    sig = pair_data[0]['sig']
+    dt_true = pair_data[0]['dt']
+
+    print "loading data from pair %s" % pair_id
+
+    windows = np.unique(pair_data['window_id'])
+
     modelA = np.zeros((N_eval * len(windows), 2))
     modelB = np.zeros((N_eval * len(windows), 2))
     t_maxcorr = np.zeros((len(windows), ))
@@ -46,17 +45,17 @@ for pairNo, tau, sig, dt_true in zip(pairNos, taus, sigs, dt_trues):
         axsB = axsB.flatten()
 
     for i, window in enumerate(windows):
-        print "window " + str(i) + " ..."
+        print "window %s..." % window
     
-        data = lightcurve[window[0]:window[1]]
-        t_eval[N_eval*i:N_eval*(i+1)] = np.atleast_2d(np.linspace(np.min(data['time']), np.max(data['time']), N_eval)).T
+        window_data = pair_data[pair_data['window_id'] == window]
+        t_eval[N_eval*i:N_eval*(i+1)] = np.atleast_2d(np.linspace(np.min(window_data['time']), np.max(window_data['time']), N_eval)).T
     
         # find the best-fit model for LC A
-        XA = data['time'].T
+        XA = window_data['time'].T
         XA = XA.reshape((len(XA), 1))
-        fA = (data['lcA'] - np.mean(data['lcA'])) / np.std(data['lcA'])
-        dfA = (data['errA'] - np.mean(data['errA'])) / np.std(data['errA'])
-        modelA[N_eval*i:N_eval*(i+1), 0], modelA[N_eval*i:N_eval*(i+1), 1] = make_a_model(pairNo, 
+        fA = (window_data['lcA'] - np.mean(window_data['lcA'])) / np.std(window_data['lcA'])
+        dfA = (window_data['errA'] - np.mean(window_data['errA'])) / np.std(window_data['errA'])
+        modelA[N_eval*i:N_eval*(i+1), 0], modelA[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
                                                                                           t_eval[N_eval*i:N_eval*(i+1)], 
                                                                                           XA, fA, dfA,
                                                                                           theta0=sig,
@@ -64,11 +63,11 @@ for pairNo, tau, sig, dt_true in zip(pairNos, taus, sigs, dt_trues):
                                                                                           thetaU=tau) # image A
 
         # find the best-fit model for LC B
-        XB = data['time'].T
+        XB = window_data['time'].T
         XB = XB.reshape((len(XB), 1))
-        fB = (data['lcB'] - np.mean(data['lcB'])) / np.std(data['lcB'])
-        dfB = (data['errB'] - np.mean(data['errB'])) / np.std(data['errB'])
-        modelB[N_eval*i:N_eval*(i+1), 0], modelB[N_eval*i:N_eval*(i+1), 1] = make_a_model(pairNo, 
+        fB = (window_data['lcB'] - np.mean(window_data['lcB'])) / np.std(window_data['lcB'])
+        dfB = (window_data['errB'] - np.mean(window_data['errB'])) / np.std(window_data['errB'])
+        modelB[N_eval*i:N_eval*(i+1), 0], modelB[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
                                                                                           t_eval[N_eval*i:N_eval*(i+1)], 
                                                                                           XB, fB, dfB,
                                                                                           theta0=sig,
@@ -85,17 +84,17 @@ for pairNo, tau, sig, dt_true in zip(pairNos, taus, sigs, dt_trues):
         else:
             t_maxcorr[i] = maxcorr[0][0]
     
-        ###  plot_model(pairNo, dt, x, y_pred, sigma, ob)   
+        ###  plot_model(pair_id, dt, x, y_pred, sigma, ob)   
         if do_plot:
-            axsA[i] = plot_data(axsA[i], pairNo, 0, XA, fA, dfA, "A") #A
-            axsA[i] = plot_model(axsA[i], pairNo, 0, 
+            axsA[i] = plot_data(axsA[i], pair_id, 0, XA, fA, dfA, "A") #A
+            axsA[i] = plot_model(axsA[i], pair_id, 0, 
                                  t_eval[N_eval*i:N_eval*(i+1)], 
                                  modelA[N_eval*i:N_eval*(i+1), 0], 
                                  modelA[N_eval*i:N_eval*(i+1), 1],
                                  "A ") #A
     
-            axsB[i] = plot_data(axsB[i], pairNo, 0, XB, fB, dfB, "B") #B
-            axsB[i] = plot_model(axsB[i], pairNo, 0, 
+            axsB[i] = plot_data(axsB[i], pair_id, 0, XB, fB, dfB, "B") #B
+            axsB[i] = plot_model(axsB[i], pair_id, 0, 
                                  t_eval[N_eval*i:N_eval*(i+1)], 
                                  modelB[N_eval*i:N_eval*(i+1), 0], 
                                  modelB[N_eval*i:N_eval*(i+1), 1],
@@ -110,8 +109,8 @@ for pairNo, tau, sig, dt_true in zip(pairNos, taus, sigs, dt_trues):
         figB.suptitle("Lightcurve B \n True time delay: " + 
                       str(dt_true) + 
                       " days")
-        figA.savefig("pair" + str(pairNo) + "_A.png")
-        figB.savefig("pair" + str(pairNo) + "_B.png")
+        figA.savefig("pair" + str(pair_id) + "_A.png")
+        figB.savefig("pair" + str(pair_id) + "_B.png")
 
 np.save("dt_preds", dt_preds)
 plt.show()
