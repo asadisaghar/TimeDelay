@@ -64,8 +64,8 @@ for dirpath, dirnames, filenames in os.walk(os.path.join(os.getcwd(), 'tdc1')):
             else:
                 truths = truth
 
-savez('pairs.npz', pairs)
-savez('truths.npz', truths)
+savez('TimeDelayData/pairs.npz', pairs)
+savez('TimeDelayData/truths.npz', truths)
 
 
 for field in ("dt", "m1", "m2", "zl", "zs", "id", "tau", "sig"):
@@ -85,4 +85,4 @@ for i in xrange(0, len(truths)):
 
 pairs['full_pair_id'] = pairs['pair'] + pairs['rung'] * 10000 + pairs['tdc'] * 100000
 
-savez('pairs_with_truths.npz', pairs)
+savez('TimeDelayData/pairs_with_truths.npz', pairs)
