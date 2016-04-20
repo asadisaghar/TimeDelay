@@ -1,8 +1,9 @@
 import numpy as np
 import cPickle as pickle
+from matplotlib.mlab import frange
 
 def eval_signal_from_GP_model(window, t_eval):
-    with open("GPModels/window.pkl", "rd") as f:
+    with open("GPModels/%s.pkl" % window, "rd") as f:
         model = pickle.load(f)
     sig_eval, MSE = model.predict(t_eval, eval_MSE=True)
     return sig_eval, MSE
@@ -10,17 +11,16 @@ def eval_signal_from_GP_model(window, t_eval):
 def evenly_sample_window(window_data, dt):
     return frange(window_data[0], window_data[-1], dt)
 
-def write_to_file(dt=0.1, system_type="double"):
-    data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0']
-    pair_ids = np.unique(data['full_pair_id'])
+def filter_pairs(pair_ids, system_type="double"):
     quad_pair_ids = pair_ids[pair_ids % 1.0 == 0.5] # Finde file A of a quadratic system
     quad_pair_ids = np.append(quad_pair_ids, quad_pair_ids - 0.5) # Finds file B of the same quadratic system
     if system_type == "double":
-        pair_ids = np.setdiff1d(pair_ids, quad_pair_ids) # Removes all quadratic systems from pair_ids
+        return np.setdiff1d(pair_ids, quad_pair_ids) # Removes all quadratic systems from pair_ids
     elif system_type == "quad":
-        pair_ids = quad_pair_ids # Chooses all quadratic systems from pair_ids
+        return quad_pair_ids # Chooses all quadratic systems from pair_ids
+    return  pair_ids
 
-    windows = np.unique(pair_data['window_id'])
+def resample_using_gp_models(data, pair_ids, dt=0.1):
     outdata = None
     for pair_id in pair_ids:
         pair_data = data[data['full_pair_id'] == pair_id]
@@ -30,6 +30,7 @@ def write_to_file(dt=0.1, system_type="double"):
         m1 = pair_data[0]['m1']
         m2 = pair_data[0]['m2']
 
+        windows = np.unique(pair_data['window_id'])
         for i, window in enumerate(windows):
             window_data = pair_data[pair_data['window_id'] == window]
             t_eval = evenly_sample_window(window_data, dt)
@@ -61,6 +62,14 @@ def write_to_file(dt=0.1, system_type="double"):
             if outdata is None:
                 outdata = res
             else:
-                outdata.append(res)
+                outdata = np.append(outdata, res)
 
+    return outdata
+
+
+def write_to_file(dt=0.1, system_type="double"):
+    data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0']
+    pair_ids = np.unique(data['full_pair_id'])
+    pair_ids = filter_pairs(pair_ids, system_type)
+    outdata = resample_using_gp_models(data, pair_ids)
     np.savez('GPModels_of_windows_with_truth', outdata)
