@@ -48,38 +48,40 @@ for pair_id in pair_ids:
     for i, window in enumerate(windows):
         print "window %s..." % window
     
-        window_data = pair_data[pair_data['window_id'] == window]
-        t_eval[N_eval*i:N_eval*(i+1)] = np.atleast_2d(np.linspace(np.min(window_data['time']), np.max(window_data['time']), N_eval)).T
-    
-        # find the best-fit model for LC A
-        XA = window_data['time'].T
-        XA = XA.reshape((len(XA), 1))
-        fA = (window_data['lcA'] - np.mean(window_data['lcA'])) / np.std(window_data['lcA'])
-        dfA = (window_data['errA'] - np.mean(window_data['errA'])) / np.std(window_data['errA'])
-        gpA, modelA[N_eval*i:N_eval*(i+1), 0], modelA[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
-                                                                                               t_eval[N_eval*i:N_eval*(i+1)], 
-                                                                                               XA, fA, dfA,
-                                                                                               theta0=sig,
-                                                                                               thetaL=tau,
-                                                                                               thetaU=tau) # image A
+        try:
+            window_data = pair_data[pair_data['window_id'] == window]
+            t_eval[N_eval*i:N_eval*(i+1)] = np.atleast_2d(np.linspace(np.min(window_data['time']), np.max(window_data['time']), N_eval)).T
 
-        with open("GPModels/%sA.pkl"%(window), "wb") as f:
-            pickle.dump(gpA, f)
+            # find the best-fit model for LC A
+            XA = window_data['time'].T
+            XA = XA.reshape((len(XA), 1))
+            fA = (window_data['lcA'] - np.mean(window_data['lcA'])) / np.std(window_data['lcA'])
+            dfA = (window_data['errA'] - np.mean(window_data['errA'])) / np.std(window_data['errA'])
+            gpA, modelA[N_eval*i:N_eval*(i+1), 0], modelA[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
+                                                                                                   t_eval[N_eval*i:N_eval*(i+1)], 
+                                                                                                   XA, fA, dfA,
+                                                                                                   theta0=sig,
+                                                                                                   thetaL=tau,
+                                                                                                   thetaU=tau) # image A
 
-        # find the best-fit model for LC B
-        XB = window_data['time'].T
-        XB = XB.reshape((len(XB), 1))
-        fB = (window_data['lcB'] - np.mean(window_data['lcB'])) / np.std(window_data['lcB'])
-        dfB = (window_data['errB'] - np.mean(window_data['errB'])) / np.std(window_data['errB'])
-        gpB, modelB[N_eval*i:N_eval*(i+1), 0], modelB[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
-                                                                                               t_eval[N_eval*i:N_eval*(i+1)], 
-                                                                                               XB, fB, dfB,
-                                                                                               theta0=sig,
-                                                                                               thetaL=tau,
-                                                                                               thetaU=tau) # image B
-        with open("GPModels/%sB.pkl"%(window), "wb") as f:
-            pickle.dump(gpB, f)
-            
+            with open("GPModels/%sA.pkl"%(window), "wb") as f:
+                pickle.dump(gpA, f)
+
+            # find the best-fit model for LC B
+            XB = window_data['time'].T
+            XB = XB.reshape((len(XB), 1))
+            fB = (window_data['lcB'] - np.mean(window_data['lcB'])) / np.std(window_data['lcB'])
+            dfB = (window_data['errB'] - np.mean(window_data['errB'])) / np.std(window_data['errB'])
+            gpB, modelB[N_eval*i:N_eval*(i+1), 0], modelB[N_eval*i:N_eval*(i+1), 1] = make_a_model(pair_id, 
+                                                                                                   t_eval[N_eval*i:N_eval*(i+1)], 
+                                                                                                   XB, fB, dfB,
+                                                                                                   theta0=sig,
+                                                                                                   thetaL=tau,
+                                                                                                   thetaU=tau) # image B
+            with open("GPModels/%sB.pkl"%(window), "wb") as f:
+                pickle.dump(gpB, f)
+        except Exception, e:
+            print "    ", e
 
     
         ###  plot_model(pair_id, dt, x, y_pred, sigma, ob)   
