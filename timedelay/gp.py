@@ -13,11 +13,11 @@ def make_a_model(pairNo, x, X, y, dy, theta0=1e-3, thetaL=1e-3, thetaU=1):
     # differentiable (smooth), then one should use the
     # squared-exponential correlation model.
     gp = GaussianProcess(corr='squared_exponential',
-                         regr = "quadratic", #?
+                         regr = "quadratic",
                          theta0 = theta0,
                          thetaL = thetaL,
                          thetaU = thetaU,
-                         nugget = (dy / y) ** 2, #?
+                         nugget = (dy / y) ** 2,
                          random_start=500)
 
     # Fit to data using Maximum Likelihood Estimation of the parameters
@@ -69,22 +69,29 @@ def resample_using_gp_models(data, pair_ids, dt=0.1):
             print "    window %s" % window
             window_data = pair_data[pair_data['window_id'] == window]
             t_eval = evenly_sample_window(window_data, dt)
-            sig_evalA, sig_errA = eval_signal_from_GP_model(str(window) + "A", t_eval)
-            sig_evalB, sig_errB = eval_signal_from_GP_model(str(window) + "B", t_eval)
 
-            res = np.zeros(len(t_eval), dtype=[('window_id', 'f4'), 
-                                               ('t_eval', 'f4'),
-                                               ('sig_evalA', 'f4'),
-                                               ('sig_errA', 'f4'),
-                                               ('sig_evalB', 'f4'),
-                                               ('sig_errB', 'f4'),
-                                               ('dt', 'f4'),
-                                               ('tau', 'f4'),
-                                               ('sig', 'f4'),
-                                               ('m1', 'f4'),
-                                               ('m2', 'f4')])
+            sig_evalA, sig_errA = eval_signal_from_GP_model(str(window) + "A", t_eval)
+            sig_evalA = np.reshape(sig_evalA, (len(sig_evalA), 1))
+            sig_errA = np.reshape(sig_errA, (len(sig_errA), 1))
+            sig_evalB, sig_errB = eval_signal_from_GP_model(str(window) + "B", t_eval)
+            sig_evalB = np.reshape(sig_evalB, (len(sig_evalB), 1))
+            sig_errB = np.reshape(sig_errB, (len(sig_errB), 1))
+
+            res = np.zeros((len(t_eval), 1), dtype=[('window_id', 'f4'),
+                                                    ('pair_id', 'f4'),
+                                                    ('t_eval', 'f4'),
+                                                    ('sig_evalA', 'f4'),
+                                                    ('sig_errA', 'f4'),
+                                                    ('sig_evalB', 'f4'),
+                                                    ('sig_errB', 'f4'),
+                                                    ('dt', 'f4'),
+                                                    ('tau', 'f4'),
+                                                    ('sig', 'f4'),
+                                                    ('m1', 'f4'),
+                                                    ('m2', 'f4')])
             
             res['window_id'] = window
+            res['pair_id'] = pair_id
             res['t_eval'] = t_eval
             res['sig_evalA'] = sig_evalA
             res['sig_errA'] = sig_errA
