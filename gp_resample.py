@@ -4,7 +4,7 @@ from matplotlib.mlab import frange
 from timedelay.gp import *
 from timedelay.filtering import *
 
-dt=0.1
+dt = 0.1
 system_type="double"
 
 data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0']
