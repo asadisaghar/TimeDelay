@@ -30,11 +30,11 @@ label_formats = ['float64'] * len(label_names)
 
 # Read fetures
 features = np.zeros(len(data), dtype={'names': feature_names, 
-                                       'formats': feature_formats})
+                                      'formats': feature_formats})
 
 # Read lables
 labels = np.zeros(len(data), dtype={'names': label_names, 
-                                       'formats': label_formats})
+                                    'formats': label_formats})
 
 
 for name in feature_names:
@@ -65,7 +65,7 @@ alphas = 10**np.linspace(-5, 1, 100)
 # Build a LassoCV model
 # Train a Lasso model over alphas and choose the best alpha by cross-validation
 model = LassoCV(alphas=alphas, selection='random', fit_intercept=True, normalize=True) 
-model.fit(features_train, labels_train)
+model.fit(features_train['sig_evalA'], labels_train['dt'])
 w = model.coef_
 
 # Plot feature contributions for the best-fit model asd the MSE for each alpha
@@ -76,6 +76,7 @@ axs[0].plot(model.alphas_, model.mse_path_)
 axs[1].plot(range(len(w)), w, 'o')
 
 # How well does the trained model perform on the test test?
-labels_pred = model.predict(features_test)
-score = np.mean((labels_pred - labels_test) ** 2)
-axs[2].plot(labels_pred, labels_test)
+labels_pred = model.predict(features_test['sig_evalA'])
+score = np.mean((labels_pred - labels_test['dt']) ** 2)
+axs[2].plot(labels_pred, labels_test['dt'], '.')
+axs[2].plot(labels_test['dt'], labels_test['dt'], '-k') 
