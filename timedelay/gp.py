@@ -73,6 +73,7 @@ def resample_using_gp_models(data, pair_ids, dt=0.1):
             sig_evalB, sig_errB = eval_signal_from_GP_model(str(window) + "B", t_eval)
 
             res = np.zeros(len(t_eval), dtype=[('window_id', 'f4'), 
+                                               ('t_eval', 'f4'),
                                                ('sig_evalA', 'f4'),
                                                ('sig_errA', 'f4'),
                                                ('sig_evalB', 'f4'),
@@ -84,6 +85,7 @@ def resample_using_gp_models(data, pair_ids, dt=0.1):
                                                ('m2', 'f4')])
             
             res['window_id'] = window
+            res['t_eval'] = t_eval
             res['sig_evalA'] = sig_evalA
             res['sig_errA'] = sig_errA
             res['sig_evalB'] = sig_evalB
