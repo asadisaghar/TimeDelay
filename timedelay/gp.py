@@ -70,10 +70,15 @@ def resample_using_gp_models(data, pair_ids, dt=0.1):
             window_data = pair_data[pair_data['window_id'] == window]
             t_eval = evenly_sample_window(window_data, dt)
 
-            sig_evalA, sig_errA = eval_signal_from_GP_model(str(window) + "A", t_eval)
+            try:
+                sig_evalA, sig_errA = eval_signal_from_GP_model(str(window) + "A", t_eval)
+                sig_evalB, sig_errB = eval_signal_from_GP_model(str(window) + "B", t_eval)
+            except:
+                # Ignore models that don't exist due to broken data in previous stage
+                continue
+
             sig_evalA = np.reshape(sig_evalA, (len(sig_evalA), 1))
             sig_errA = np.reshape(sig_errA, (len(sig_errA), 1))
-            sig_evalB, sig_errB = eval_signal_from_GP_model(str(window) + "B", t_eval)
             sig_evalB = np.reshape(sig_evalB, (len(sig_evalB), 1))
             sig_errB = np.reshape(sig_errB, (len(sig_errB), 1))
 
