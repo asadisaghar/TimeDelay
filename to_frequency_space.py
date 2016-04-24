@@ -11,7 +11,7 @@ for window_id in window_ids:
 
     freq = np.fft.fftfreq(len(window_data))
 
-    res = np.zeros(len(window_data), dtype=[('window_id', 'f4'), ('fftA', 'f4'), ('fftB', 'f4'), ('dt', '<f4'), ('tau', '<f4'), ('sig', '<f4'), ('m1', '<f4'), ('m2', '<f4')])
+    res = np.zeros(len(window_data), dtype=[('window_id', 'f4'), ('fftA', 'complex128'), ('fftB', 'complex128'), ('dt', '<f4'), ('tau', '<f4'), ('sig', '<f4'), ('m1', '<f4'), ('m2', '<f4')])
     res['fftA'] = np.fft.fft(window_data['sig_evalA'])
     res['fftB'] = np.fft.fft(window_data['sig_evalB'])
     for name in ('window_id', 'dt', 'tau', 'sig', 'm1', 'm2'):
