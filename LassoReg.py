@@ -17,14 +17,15 @@ feature_formats = ['float64'] * len(feature_names)
 label_formats = ['float64'] * len(label_names)
 
 # Read fetures
-features = np.zeros((len(data), len(feature_names)))
-
+#features = np.zeros((len(data), len(feature_names)))
+features = np.zeros((len(data), 1))
 # Read lables
 labels = np.zeros((len(data), len(label_names)))
 
-for i, name in enumerate(feature_names):
-    features[:, i] = data[name]
-print "features shape: ", features.shape
+#for i, name in enumerate(feature_names):
+#    features[:, i] = data[name]
+#print "features shape: ", features.shape
+features[:,0] = data['sig_evalA'] - data['sig_evalB']
 
 for j, name in enumerate(label_names):
     labels[:, j] = data[name]
@@ -38,9 +39,14 @@ alphas = 10 ** np.linspace(-5, 1, 100)
 # Build a LassoCV model
 # Train a Lasso model over alphas and choose the best alpha by cross-validation
 model = LassoCV(alphas=alphas, selection='random', fit_intercept=True, normalize=True) 
-model.fit(features_train, labels_train[:, 0])
+model.fit(features_train, labels_train)
 w = model.coef_
 print w
+
+# Pickle the model
+with open("LassoReg.pkl", "wd") as f:
+    pickle(model, f)
+
 # Plot feature contributions for the best-fit model asd the MSE for each alpha
 fig, axs = plt.subplots(1,3)
 axs = axs.flatten()
