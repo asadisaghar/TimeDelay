@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import correlate, detrend
+import scipy.signal
+from scipy.signal import correlate
 from timedelay.correlation import *
 from scipy import signal
 import sys
@@ -21,7 +22,7 @@ def timeshift_mse(x1, x2):
 def timeshift_correlate(sig1, sig2):
     return signal.correlate(sig1, sig2, mode="full")
 
-def timeshift(data, correlator, dt = 0.1, windows = None):
+def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False):
     output = None
     if windows is None:
         windows = np.unique(data['window_id'])
@@ -30,12 +31,12 @@ def timeshift(data, correlator, dt = 0.1, windows = None):
         t = data['t_eval'][data['window_id']==window]
         t = t - np.min(t)
         sigA = data['sig_evalA'][data['window_id']==window]
-        #    sigA = detrend(sigA)
-        sigA = (sigA - np.mean(sigA)) / np.std(sigA)
-
         sigB = data['sig_evalB'][data['window_id']==window]
-        #    sigB = detrend(sigB)
+        sigA = (sigA - np.mean(sigA)) / np.std(sigA)
         sigB = (sigB - np.mean(sigB)) / np.std(sigB)
+        if detrend:
+            sigA = scipy.signal.detrend(sigA)
+            sigB = scipy.signal.detrend(sigB)
 
         corr = correlator(sigA, sigB)
 
@@ -60,10 +61,11 @@ if not argv:
     python timeshift.py METHOD OUTPUT.npz
     python timeshift.py METHOD OUTPUT.npz BUCKET TOTAL_BUCKETS
 
-If buckets are specified, will process divide the data into that many
-buckets, and only process the specified bucket.
+If buckets are specified, divide the data into that many buckets, and
+only process the specified bucket.
 
-METHOD is either mse or correlate
+METHOD is either mse or correlate, METHOD could be mse-detrend or
+correlate-detrend to use detrend after normalization.
 """
     sys.exit(-1)
 
@@ -92,6 +94,11 @@ if method == 'mse':
     data = timeshift(data, timeshift_mse, windows=windows)
 elif method == 'correlate':
     data = timeshift(data, timeshift_correlate, windows=windows)
+elif method == 'mse-detrend':
+    data = timeshift(data, timeshift_mse, windows=windows, detrend=True)
+elif method == 'correlate-detrend':
+    data = timeshift(data, timeshift_correlate, windows=windows, detrend=True)
+
 else:
     raise Exception("Unknown correlation mode")
 
