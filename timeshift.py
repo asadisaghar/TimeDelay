@@ -4,6 +4,7 @@ from scipy.signal import correlate, detrend
 from timedelay.correlation import *
 from scipy import signal
 import sys
+import math
 
 def timeshift_mse(x1, x2):
     res = np.zeros(len(x1) * 2 - 1)
@@ -20,9 +21,10 @@ def timeshift_mse(x1, x2):
 def timeshift_correlate(sig1, sig2):
     return signal.correlate(sig1, sig2, mode="full")
 
-def timeshift(data, correlator, dt = 0.1):
+def timeshift(data, correlator, dt = 0.1, windows = None):
     output = None
-    windows = np.unique(data['window_id'])
+    if windows is None:
+        windows = np.unique(data['window_id'])
     for i, window in enumerate(windows):
         print "Window %s" % window
         t = data['t_eval'][data['window_id']==window]
@@ -52,12 +54,33 @@ def timeshift(data, correlator, dt = 0.1):
             output = np.append(output, res)
     return output
 
+argv = sys.argv[1:]
+method = argv[0]
+output = argv[1]
+
+bucket = None
+buckets = None
+if len(argv) > 2:
+    bucket = int(argv[2])
+    buckets = int(argv[3])
+
 data = np.load("TimeDelayData/gp_resampled_of_windows_with_truth.npz")['arr_0']
-if sys.argv[1] == 'mse':
-    data = timeshift(data, timeshift_mse)
-elif sys.argv[1] == 'correlate':
-    data = timeshift(data, timeshift_correlate)
+
+windows = None
+if buckets is not None:
+    windows = np.unique(data['window_id'])
+
+    bucketlen = math.ceil(len(windows) / float(buckets))
+    start_win = bucket * bucketlen
+    end_win = (bucket+1)*bucketlen
+    windows = windows[start_win:end_win]
+    print "Working on subset: %s - %s (%s total)" % (windows[start_win], windows[end_win-1], end_win - start_win)
+
+if method == 'mse':
+    data = timeshift(data, timeshift_mse, windows=windows)
+elif method == 'correlate':
+    data = timeshift(data, timeshift_correlate, windows=windows)
 else:
     raise Exception("Unknown correlation mode")
 
-np.savez(sys.argv[2], data)
+np.savez(output, data)
