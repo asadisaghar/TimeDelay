@@ -39,14 +39,14 @@ def timeshift(data, correlator, dt = 0.1, windows = None):
 
         corr = correlator(sigA, sigB)
 
-        res = np.zeros(len(corr), dtype=[('pair_id', 'f4'), ('window_id', 'f4'), ('mse_dt', 'f4'), ('mse_value', 'f4'), ('mse', 'f4'), ('dt', '<f4'), ('tau', '<f4'), ('sig', '<f4'), ('m1', '<f4'), ('m2', '<f4')])
+        res = np.zeros(len(corr), dtype=[('pair_id', 'f4'), ('window_id', 'f4'), ('offset', 'f4'), ('correlation', 'f4'), ('dt', '<f4'), ('tau', '<f4'), ('sig', '<f4'), ('m1', '<f4'), ('m2', '<f4')])
 
         res['window_id'] = window
         for name in ('pair_id', 'dt', 'tau', 'sig', 'm1', 'm2'):
             res[name] = data[name][data['window_id']==window][0]
 
-        res['mse_dt'] = dt * np.arange(-len(sigA)+1, len(sigA), 1)
-        res['mse_value'] = corr
+        res['offset'] = dt * np.arange(-len(sigA)+1, len(sigA), 1)
+        res['correlation'] = corr
 
         if output is None:
             output = res

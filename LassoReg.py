@@ -5,58 +5,101 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import cPickle as pickle
-from sklearn.linear_model import Lasso, LassoCV
+from sklearn.linear_model import Lasso, LassoCV, MultiTaskLassoCV
 from sklearn.cross_validation import train_test_split
 from timedelay.data_splitting import *
 
-data = np.load("TimeDelayData/gp_resampled_of_windows_with_truth.npz")['arr_0']
-print "data shape: ", data.shape
-feature_names = ['sig_evalA', 'sig_errA', 'sig_evalB', 'sig_errB']
-label_names = ['dt', 'tau', 'sig', 'm1', 'm2']
-feature_formats = ['float64'] * len(feature_names)
-label_formats = ['float64'] * len(label_names)
+x = np.load("TimeDelayData/gp_resampled_of_windows_with_truth.npz")['arr_0']
+#x = np.load("TimeDelayData/fft_comparisons_with_truth.npz")['arr_0']
+np.random.shuffle(x)
 
-# Read fetures
-#features = np.zeros((len(data), len(feature_names)))
-features = np.zeros((len(data), 1))
-# Read lables
-labels = np.zeros((len(data), len(label_names)))
+xcols = ['sig_evalA', 'sig_errA', 'sig_evalB', 'sig_errB'] # Features
+#xcols = ['sig_evalA', 'sig_evalB']
+ycols = ['dt', 'tau', 'sig', 'm1', 'm2'] #labels
 
-#for i, name in enumerate(feature_names):
-#    features[:, i] = data[name]
-#print "features shape: ", features.shape
-features[:,0] = data['sig_evalA'] - data['sig_evalB']
 
-for j, name in enumerate(label_names):
-    labels[:, j] = data[name]
-print "labels shape: ", labels.shape
+X = np.zeros((len(x), len(xcols)))
+for i, xcol in enumerate(xcols):
+    X[:,i] = x[xcol]
 
-features_train, labels_train, features_test, labels_test = split_data_by_windows(data, features, labels, test_fraction=0.33)
+y = np.zeros((len(x), len(ycols)))
+for j, ycol in enumerate(ycols):
+    y[:,j] = x[ycol]
 
+num_rows = len(X)
+train_len = int(num_rows * 3. / 4.)
+Xtrain = X[:train_len,:]
+ytrain = y[:train_len]
+Xtest = X[train_len:,:]
+ytest = y[train_len:]
+
+######################
+## MultiTaskLassoCV ##
+######################
+# # Guess a range of alphas (regularization parameter)
+# alphas = 10 ** np.linspace(-5, -1, 100)
+
+# # Build a LassoCV model
+# # Train a Lasso model over alphas and choose the best alpha by cross-validation
+# model = MultiTaskLassoCV(alphas=alphas, selection='random', cv=3, fit_intercept=True, normalize=False, n_jobs=4) 
+# model.fit(Xtrain, ytrain)
+# ypred = model.predict(Xtest)
+# w = model.coef_
+# print w
+
+# score = (sum((ytest - ypred)**2),)
+
+# # Plot feature contributions for the best-fit model asd the MSE for each alpha
+# #axs[0].plot(ytest, ypred, '.')
+# #axs[0].set_xlim(np.min(ytest[:,0]), np.max(ytest[:,0]))
+# #axs[0].set_ylim(np.min(ytest[:,0]), np.max(ytest[:,0]))
+# axs[0].plot(np.log(model.alphas_), np.sqrt(model.mse_path_).mean(axis = 1))
+# axs[0].axvline(-np.log(model.alpha_), color = 'red')
+# axs[0].set_ylabel('RMSE (avg. across folds)')
+# axs[0].set_xlabel('log(alpha)')
+# axs[1].plot(range(len(w)), w, 'o')
+# axs[1].hlines(0, xmin=0, xmax=len(w), colors='k')
+# plt.show()
+
+###########
+## Lasso ##
+###########
 # Guess a range of alphas (regularization parameter)
-alphas = 10 ** np.linspace(-5, 1, 100)
+alphas = 10 ** np.linspace(-5, -1, 10)
 
-# Build a LassoCV model
-# Train a Lasso model over alphas and choose the best alpha by cross-validation
-model = LassoCV(alphas=alphas, selection='random', fit_intercept=True, normalize=True) 
-model.fit(features_train, labels_train)
-w = model.coef_
-print w
-
-# Pickle the model
-with open("LassoReg.pkl", "wd") as f:
-    pickle(model, f)
-
-# Plot feature contributions for the best-fit model asd the MSE for each alpha
-fig, axs = plt.subplots(1,3)
+fig, axs = plt.subplots(2,2)
 axs = axs.flatten()
 
-axs[0].plot(model.alphas_, model.mse_path_)
-axs[1].plot(range(len(w)), w, 'o')
-
-# How well does the trained model perform on the test test?
-labels_pred = model.predict(features_test)
-score = np.mean((labels_pred - labels_test[:, 0]) ** 2)
-axs[2].plot(labels_pred, labels_test[:, 0], '.')
-axs[2].plot(labels_test[:, 0], labels_test[:, 0], '-k') 
+for alpha in alphas:
+# Build a LassoCV model
+# Train a Lasso model over alphas and choose the best alpha by cross-validation
+    model = Lasso(alpha=alpha, selection='random', fit_intercept=True, normalize=False) 
+    model.fit(Xtrain, ytrain)
+    ypred = model.predict(Xtest)
+    w = model.coef_
+    score = (sum((ytest - ypred)**2),)
+    axs[0].plot(ytest, ypred, '.')
+    axs[1].plot(np.log(alpha), score, '.')
+    axs[2].plot(range(len(w)), w, 'o')
+# Plot feature contributions for the best-fit model asd the MSE for each alpha
+#axs[0].plot(ytest, ypred, '.')
+#axs[0].set_xlim(np.min(ytest[:,0]), np.max(ytest[:,0]))
+#axs[0].set_ylim(np.min(ytest[:,0]), np.max(ytest[:,0]))
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+# Pickle the model
+#with open("LassoReg.pkl", "wd") as f:
+#    pickle.dump(model, f)
+
+
