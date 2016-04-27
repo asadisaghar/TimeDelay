@@ -8,7 +8,7 @@ window_ids = np.unique(data['window_id'])
 fft_out = None
 for window_id in window_ids:
     window_data = data[data['window_id'] == window_id]
-
+    print "Window  ", window_id
     freq = np.fft.fftfreq(len(window_data))
 
     res = np.zeros(len(window_data), dtype=[('window_id', 'f4'), ('fftA', 'complex128'), ('fftB', 'complex128'), ('dt', '<f4'), ('tau', '<f4'), ('sig', '<f4'), ('m1', '<f4'), ('m2', '<f4')])
