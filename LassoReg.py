@@ -47,7 +47,11 @@ alphas = 10 ** np.linspace(-5, 1, 100)
 # Build a LassoCV model
 # Train a Lasso model over alphas and choose the best alpha by cross-validation
 model = LassoCV(alphas=alphas, selection='random', fit_intercept=True, normalize=True, n_jobs=4) 
+<<<<<<< Updated upstream
 model.fit(features_train, labels_train[:,0])
+=======
+model.fit(features_train, labels_train[:, 0])
+>>>>>>> Stashed changes
 w = model.coef_
 print w
 
