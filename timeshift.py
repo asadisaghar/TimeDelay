@@ -86,7 +86,7 @@ if buckets is not None:
     start_win = bucket * bucketlen
     end_win = (bucket+1)*bucketlen
     windows = windows[start_win:end_win]
-    print "Working on subset: %s - %s (%s total)" % (windows[start_win], windows[end_win-1], end_win - start_win)
+    print "Working on subset: %s - %s (%s total)" % (windows[0], windows[-1], end_win - start_win)
 
 if method == 'mse':
     data = timeshift(data, timeshift_mse, windows=windows)
