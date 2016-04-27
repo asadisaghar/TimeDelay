@@ -55,6 +55,18 @@ def timeshift(data, correlator, dt = 0.1, windows = None):
     return output
 
 argv = sys.argv[1:]
+if not argv:
+    print """Usage:
+    python timeshift.py METHOD OUTPUT.npz
+    python timeshift.py METHOD OUTPUT.npz BUCKET TOTAL_BUCKETS
+
+If buckets are specified, will process divide the data into that many
+buckets, and only process the specified bucket.
+
+METHOD is either mse or correlate
+"""
+    sys.exit(-1)
+
 method = argv[0]
 output = argv[1]
 
