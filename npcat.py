@@ -1,6 +1,10 @@
 import numpy as np
 import sys
 
+if len(sys.argv) < 3:
+    print """Usage: npcat.py INPUT1 ... INPUTN OUTPUT"""
+    sys.exit(-1)
+
 inputs = sys.argv[1:-1]
 output = sys.argv[-1]
 
