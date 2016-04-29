@@ -4,27 +4,26 @@ from matplotlib import pyplot as plt
 import sklearn.linear_model
 import numpy.lib.recfunctions
 
-inputs = sys.argv[1:]
+if len(sys.argv < 2):
+    print """Usage: regression.py input_field1,...,input_fieldN output_field file1 ... fileM"""
+    sys.exit(-1)
 
-data = None
+input_fields = sys.argv[1].split(",")
+output_field = sys.argv[2]
+inputs = sys.argv[3:]
+
+X = None
+y = None
 for i, input in enumerate(inputs):
-    input_data = np.load(input)['arr_0']
-    if data is None:
-        data = input_data
-    else:
-        data = append_fields(data, 'est_dt_mean_%s' % i, [], dtypes='<f4')
-        data = append_fields(data, 'est_dt_std_%s' % i, [], dtypes='<f4')
-        data['est_dt_mean_%s' % i] = input_data['est_dt_mean']
-        data['est_dt_std_%s' % i] = input_data['est_dt_std']
+    data = np.load(input)['arr_0']
+    if X is None:
+        X = np.zeros((len(data), len(input_fields)*len(inputs)))
+        y = np.zeros(len(data))
+        y[:] = data[output_field]
+    for j, input_field in enumerate(input_fields):
+        X[:,i * len(input_fields) + j] = data[input_field]
 
-np.random.shuffle(data)
-
-datacols = [name for name in data.dtype.names if name.startswith("est_dt_")]
-
-X = np.zeros((len(data), len(datacols)))
-for i, datacol in enumerate(datacols):
-    X[:,i] = data[datacol]
-y = data['dt']
+np.random.shuffle(X)
 
 num_rows = len(X)
 train_len = int(num_rows * 3. / 4.)
@@ -32,7 +31,6 @@ Xtrain = X[:train_len,:]
 ytrain = y[:train_len]
 Xtest = X[train_len:,:]
 ytest = y[train_len:]
-
 
 m = sklearn.linear_model.LinearRegression()
 m.fit(Xtrain, ytrain)
