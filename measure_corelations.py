@@ -21,10 +21,10 @@ for j, pair_id in enumerate(pair_ids):
         window_data = pair_data[pair_data['window_id']==window]
         est_dts[i] = window_data['offset'][np.argmax(window_data['correlation'])]
 
-    res['pair_id'] = pair_id
-    res['est_dt_mean'] = est_dts.mean()
-    res['est_dt_std'] = est_dts.std()
+    res['pair_id'][j] = pair_id
+    res['est_dt_mean'][j] = est_dts.mean()
+    res['est_dt_std'][j] = est_dts.std()
     for name in ('pair_id', 'dt', 'tau', 'sig', 'm1', 'm2'):
-        res[name] = pair_data[name][0]
+        res[name][j] = pair_data[name][0]
 
 np.savez(output, res)
