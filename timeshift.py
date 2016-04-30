@@ -38,7 +38,7 @@ def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False):
             sigA = scipy.signal.detrend(sigA)
             sigB = scipy.signal.detrend(sigB)
 
-        corr = correlator(sigA, sigB)
+        corr = correlator(sigB, sigA)
 
         res = np.zeros(len(corr), dtype=[('pair_id', 'f4'), ('window_id', 'f4'), ('offset', 'f4'), ('correlation', 'f4'), ('dt', '<f4'), ('tau', '<f4'), ('sig', '<f4'), ('m1', '<f4'), ('m2', '<f4')])
 
