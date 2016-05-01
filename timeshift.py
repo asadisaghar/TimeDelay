@@ -22,7 +22,7 @@ def timeshift_mse(x1, x2):
 def timeshift_correlate(sig1, sig2):
     return signal.correlate(sig1, sig2, mode="full")
 
-def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False):
+def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False, negative = False):
     output = None
     if windows is None:
         windows = np.unique(data['window_id'])
@@ -38,7 +38,10 @@ def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False):
             sigA = scipy.signal.detrend(sigA)
             sigB = scipy.signal.detrend(sigB)
 
-        corr = correlator(sigB, sigA)
+        if negative:
+            corr = correlator(sigB, sigA)
+        else:
+            corr = correlator(sigA, sigB)
 
         res = np.zeros(len(corr), dtype=[('pair_id', 'f4'), ('window_id', 'f4'), ('offset', 'f4'), ('correlation', 'f4'), ('dt', '<f4'), ('tau', '<f4'), ('sig', '<f4'), ('m1', '<f4'), ('m2', '<f4')])
 
@@ -98,7 +101,8 @@ elif method == 'mse-detrend':
     data = timeshift(data, timeshift_mse, windows=windows, detrend=True)
 elif method == 'correlate-detrend':
     data = timeshift(data, timeshift_correlate, windows=windows, detrend=True)
-
+elif method == 'negative-correlate':
+    data = timeshift(data, timeshift_correlate, windows=windows, detrend=True, negative = True)
 else:
     raise Exception("Unknown correlation mode")
 
