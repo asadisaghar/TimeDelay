@@ -13,20 +13,12 @@ for j, pair_id in enumerate(pair_ids):
     print "%s: %s of %s" % (pair_id, j, len(pair_ids))
 
     pair_data = data[data['pair_id'] == pair_id]
-    windows = np.unique(pair_data['window_id'])
-    window_wgts = np.zeros(len(windows))
-    est_dts = np.zeros(len(windows))
-    for i, window in enumerate(windows):
-        print "Window %s" % window
-        window_data = pair_data[pair_data['window_id']==window]
-        est_dts[i] = window_data['offset'][np.argmax(window_data['correlation'])]
-        window_wgts[i] = np.max(window_data['correlation'])/len(window_data)
 
     res['pair_id'][j] = pair_id
-    res['est_dt_mean'][j] = est_dts.mean()
-    res['est_dt_median'][j] = np.median(est_dts)
-    res['est_dt_std'][j] = est_dts.std()
-    res['est_dt_wgtd_mean'][j] = np.mean((est_dts * window_wgts) / np.sum(window_wgts))
+    res['est_dt_mean'][j] = pair_data['est_dt'].mean()
+    res['est_dt_median'][j] = np.median(pair_data['est_dt'])
+    res['est_dt_std'][j] = pair_data['est_dt'].std()
+    res['est_dt_wgtd_mean'][j] = np.mean((pair_data['est_dt'] * pair_data['est_weight']) / np.sum(pair_data['est_weight']))
     for name in ('pair_id', 'dt', 'tau', 'sig', 'm1', 'm2'):
         res[name][j] = pair_data[name][0]
 
