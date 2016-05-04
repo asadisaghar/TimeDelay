@@ -7,11 +7,12 @@
 \textwidth=17cm
 \textheight=25cm
 \pagestyle{empty}
-\usepackage[
-top    = 3.0cm,
-bottom = 2.0cm,
-left   = 2.5cm,
-right  = 2.2cm]{geometry}
+%% \usepackage[
+%%   top    = 3.0cm,
+%%   bottom = 2.0cm,
+%%   left   = 2.5cm,
+%%   right  = 2.2cm]{geometry}
+
 
 \begin{document}
 
@@ -26,15 +27,22 @@ right  = 2.2cm]{geometry}
     \item data generation
     \item ground truth information
     \item FIG. one centered and one raw LC pair with and without error bars
-    \item FIG. Histograms
+    \item FIG. Histograms (maybe?)
     \item XX pair systems and XX quadratic ones - we ignore the quadratic systems (for this phase)
   \end{itemize}
+\begin{figure}
+\centering
+\includegraphics[width=0.4\textwidth]{Figures/raw_data.jpg}
+\includegraphics[width=0.4\textwidth]{Figures/raw_centered_normalized_data.jpg}
+\caption{how the data looks like}
+\label{fig:raw_data}
+\end{figure}
 
 \section{Our solution}
   \begin{enumerate}
     \item smooth each observing window for each light curve individually (GPR using tau and sig from the ground truth -- but possible to optimize the smoothing by cross validation as well. So we not only solve the problem of the raw time series being unevently-sampled in time, but also keep error estimate in this step)
     \item measure cross correlation between the two light curves within each window and mark the timeshift that results in the maximum correlation coefficient as the estimated time delay of that window
-    \item compare the estimated time delays of different windows of the same pair - How though??
+    \item compare the estimated time delays of different windows of the same pair - How though? I'll discuss!
     \item Problems with time delay estimation directly from correlation coefficients
     \begin{itemize}
       \item each light curve has experienced microlensing events that are independent of those of the other image -- solution: account for microlensing events in a statistical way rather than individually -- the far-fetched proposed solution: train a classifier (maybe a neural network?) on the microlensing events and subtract a range of typical microlensing events from both signals, and use cross validation to choose the best microlensing effect by maximizing the cross correlation coefficients
