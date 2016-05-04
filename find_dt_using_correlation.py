@@ -10,6 +10,7 @@ pair_ids = np.unique(data['pair_id'])
 dt_trues = np.zeros(len(pair_ids))
 dt_ests = np.zeros(len(pair_ids))
 dt_est_err = np.zeros(len(pair_ids))
+
 def correlate_to_timeshift(sig_corr, t):
     #Generate an x axis
     xcorr = np.arange(len(sig_corr))

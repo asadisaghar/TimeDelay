@@ -2,9 +2,11 @@ import numpy as np; import matplotlib.pyplot as plt
 import sklearn.linear_model
 from numpy.lib.recfunctions import *
 
-x = np.load("TimeDelayData/timeshift_correlate_normalized_detrend.measures.npz")['arr_0']
+#x = np.load("TimeDelayData/timeshift_correlate_normalized_detrend.measures.npz")['arr_0']
+x = np.load("TimeDelayData/dt_correlate_normalized_wgtd.npz")['arr_0']
 x = append_fields(x, 'ms', [], dtypes='<f4')
-x['ms'] = x['est_dt_mean'] * x['est_dt_std']
+#x['ms'] = x['est_dt_mean'] * x['est_dt_std']
+x['ms'] = x['est_dt_median']
 
 dts = np.unique(x['dt'])
 
@@ -32,10 +34,10 @@ for i in xrange(0, len(dts)):
 
     
 
-plt.plot(x['dt'], x['ms'] / x['ms'].std(), 'g.')
+plt.plot(x['dt'], x['ms'], 'g.')
 #plt.plot(dts, msmean / msmean.std(), 'r.')
 #plt.plot(dts, clusters / clusters.std(), 'r.')
-plt.plot(dts, clusters2 / clusters2.std(), 'b.')
+plt.plot(dts, clusters, 'b.')
 plt.show()
 
 

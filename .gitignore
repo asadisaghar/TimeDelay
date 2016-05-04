@@ -66,3 +66,7 @@ target/
 *.pkl
 
 *~
+
+#TeX byproduct
+**/*.aux
+**/*.log

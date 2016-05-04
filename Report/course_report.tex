@@ -1,0 +1,69 @@
+% Project report for the AstroML course - Spring 2016 - SU
+\documentclass[a4paper, 11pt]{article}
+\usepackage{graphics,graphicx}
+\oddsidemargin=-0.54cm
+\evensidemargin=-0.54cm
+\topmargin=-1.2cm
+\textwidth=17cm
+\textheight=25cm
+\pagestyle{empty}
+\usepackage[
+top    = 3.0cm,
+bottom = 2.0cm,
+left   = 2.5cm,
+right  = 2.2cm]{geometry}
+
+\begin{document}
+
+\section{Background}
+  \begin{itemize}
+    \item the time delay challenge 2014
+    \item LSST
+  \end{itemize}
+
+\section{How do the data look like?}
+  \begin{itemize}
+    \item data generation
+    \item ground truth information
+    \item FIG. one centered and one raw LC pair with and without error bars
+    \item FIG. Histograms
+    \item XX pair systems and XX quadratic ones - we ignore the quadratic systems (for this phase)
+  \end{itemize}
+
+\section{Our solution}
+  \begin{enumerate}
+    \item smooth each observing window for each light curve individually (GPR using tau and sig from the ground truth -- but possible to optimize the smoothing by cross validation as well. So we not only solve the problem of the raw time series being unevently-sampled in time, but also keep error estimate in this step)
+    \item measure cross correlation between the two light curves within each window and mark the timeshift that results in the maximum correlation coefficient as the estimated time delay of that window
+    \item compare the estimated time delays of different windows of the same pair - How though??
+    \item Problems with time delay estimation directly from correlation coefficients
+    \begin{itemize}
+      \item each light curve has experienced microlensing events that are independent of those of the other image -- solution: account for microlensing events in a statistical way rather than individually -- the far-fetched proposed solution: train a classifier (maybe a neural network?) on the microlensing events and subtract a range of typical microlensing events from both signals, and use cross validation to choose the best microlensing effect by maximizing the cross correlation coefficients
+      \item we have no information about the effect of microlensing effects, they could only influence the trend of the data, so may be removed by detrending the light curves before cross correlating them, but the added peaks are impossible to be accounted for indicidually, but only in a statistical sense -- solution:  work with centred, normalized, and detrended light curves
+      \item if the true time delay is close to the window size, the signal overlap with the correct timeshift is, so in our cases where the two signals are not identical (only time shifted), the correlation coefficient vs time shift won't show a significant peak -- solution: account for this in dt errors
+    \end{itemize}
+    \item weight the estimated time delay at each window by the maximum correlation coefficient
+    \item use a clustering algorithm (nearest neighbour regression maybe?) on estimated dts from different windows, to derive out estimation for the pair
+    \item use a regression algorithm with the maximum correlation coefficients and MSE of hte two signals as features for the entire pair (where true dt, as well as other ground truth information we have are the labels and we hope to do a multi-dimensional regression!)
+    \item propagate errors -- no solution (yet!!)
+\end{enumerate}
+
+\section{How far along are we?}
+  mentioned above as well!
+
+\section{What is next?}
+
+\subsection*{References}
+%% {\bf Gao} et al. 2011, MNRAS, 410, 2309 $\star$
+%% {\bf Klypin} et al. 1999, ApJ, 522, 82 $\star$
+%% {\bf Macci\`o} et al. 2010, MNRAS, 402, 1995 $\star$
+%% {\bf Metcalf}, R. B., \& Madau, P. 2001, ApJ, 563, 9 $\star$
+%% {\bf Metcalf}, R. B. 2002, ApJ, 580, 696 $\star$
+%% {\bf Moore} et al. 1999, ApJ 524, L19 $\star$
+%% {\bf Myers} et al. 1999, ApJ 117, 2565 $\star$
+%% {\bf Rusin}, D., et al. 2002, MNRAS, 330, 205 $\star$
+%% {\bf Vegetti} et al. 2010, MNRAS, 408, 1969 $\star$
+%% {\bf Vegetti} et al. 2012, Nature, 481, 341 $\star$
+%% {\bf Wambsganss}, J. \& Paczynski, B. 1992, ApJ, 397, L1 $\star$
+%% {\bf Zackrisson} E. \& Riehm T. 2010, Advances in Astronomy, vol. 2010, 1 $\star$
+%% {\bf Zackrisson} et al. 2013, MNRAS, 431, 2172
+\end{document}
