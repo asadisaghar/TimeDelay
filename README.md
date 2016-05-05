@@ -35,3 +35,37 @@ Columns in 'x = load("pairs_with_truths_and_windows.npz")['arr_0']':
   * Computed values
     * full_pair_id - a (globally) unique id for each combination of tdc, rung, pair
     * window_id - a (globally) unique id for each sample window in the light curves
+
+
+# Scripts
+
+## convert_to_npz.py
+Input: tdc0/*, tdc1/*
+Output: TimeDelayData/pairs_with_truths.npz
+
+## amend_sampling.py
+Input: TimeDelayData/pairs_with_truths.npz
+Output: TimeDelayData/pairs_with_truths_and_windows.npz
+
+## GP.py
+Input: TimeDelayData/pairs_with_truths_and_windows.npz
+Output: GPModels/*
+
+## gp_resample.py
+Input: TimeDelayData/pairs_with_truths_and_windows.npz, GPModels/*
+Output: TimeDelayData/gp_resampled_of_windows_with_truth.npz
+
+## Timeshift.py
+
+Input: TimeDelayData/gp_resampled_of_windows_with_truth.npz
+Output: timeshift_{correlate,ng_correlate,mse}_normalized[_detrend].npz
+
+## measure_window_corelations.py
+Input: timeshift_{correlate,ng_correlate,mse}_normalized[_detrend].npz
+Output: timeshift_{correlate,ng_correlate,mse}_normalized[_detrend].measures.npz
+
+## sum_pair_corelation_measures.py
+Input: timeshift_{correlate,ng_correlate,mse}_normalized[_detrend].measures.npz
+Output: timeshift_{correlate,ng_correlate,mse}_normalized[_detrend].measures.pairsums.npz
+
+
