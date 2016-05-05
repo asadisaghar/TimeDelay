@@ -12,10 +12,10 @@ from timedelay.correlation import *
 from timedelay.plotting import *
 import cPickle as pickle
 
-do_plot = False
+do_plot = True
 N_eval = 500
 dt = 0.1 #day
-data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0']
+data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0'][:500]
 pair_ids = np.unique(data['full_pair_id']) # Remove [:5] for real run
 print len(pair_ids)
 quad_pair_ids = pair_ids[pair_ids % 1.0 == 0.5] # Finde file A of a quadratic system
