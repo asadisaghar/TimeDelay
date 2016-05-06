@@ -101,26 +101,39 @@ def make_fig_2(pair_id=120350):
 
 def make_fig_3(pair_id=120350):
     data_corr = np.load("TimeDelayData/timeshift_correlate_normalized_detrend.npz")['arr_0']
+    data_corr = data_corr[data_corr['pair_id'] == pair_id]
     data_mse = np.load("TimeDelayData/timeshift_mse_normalized_detrend.npz")['arr_0']
-    pair_corr = data_corr[data_corr['pair_id'] == pair_id]
-    pair_mse = data_mse[data_mse['pair_id'] == pair_id]
-    windows = np.unique(pair_corr['window_id'])
+    data_mse = data_mse[data_mse['pair_id'] == pair_id]
+    # mean_corr = np.zeros(len(data_corr))
+    # mean_mse = np.zeros(len(data_mse))
+    # w_mean_corr = np.zeros(len(data_corr))
+    # w_mean_mse = np.zeros(len(data_mse))
+    windows = np.unique(data_corr['window_id'])
+    print windows
 #    windows = np.unique(pair_mse['window_id'])
     fig, axs = plt.subplots(len(windows), 1, figsize=(20, 20), sharex=True, sharey=True)
     for i, window in enumerate(windows):
-        try:
-            window_corr = pair_corr[pair_corr['window_id'] == window]
-            window_mse = pair_mse[pair_mse['window_id'] == window]
-            axs[i].plot(window_corr['offset'], window_corr['correlation'] / np.max(window_corr['correlation']), 
-                        '-', c='#980043', label='correlation')
-            axs[i].plot(window_mse['offset'], window_mse['correlation'] / window_mse['correlation'],
-                        '-', c='#c994c7', label='MSE') 
-            plt.legend()
-        except Exception, e:
-            print "    ", e
+        window_corr = data_corr[data_corr['window_id'] == window]
+        window_mse = data_mse[data_mse['window_id'] == window]
+        axs[i].plot(window_corr['offset'], window_corr['correlation'] / np.max(window_corr['correlation']), 
+                    '-', c='#980043', label='correlation')
+        axs[i].plot(window_mse['offset'], window_mse['correlation'] / np.max(window_mse['correlation']),
+                    '-', c='#c994c7', label='MSE') 
+            # mean_corr += window_corr['correlation']
+            # mean_mse += window_mse['correlation']
+            # w_mean_corr += (window_corr['correlation'] / np.max(window_corr['correlation'])) 
+            # w_mean_mse += (window_mse['correlation'] / np.max(window_corr['correlation']))
 
-    plt.savefig("corr_vs_mse.jpg")
-#    plt.show()
+    # axs[i+1].plot(window_mse['offset'], mean_corr / len(windows),
+    #               '-', c='#980043', label='correlation') 
+    # axs[i+1].plot(window_mse['offset'], w_mean_corr / len(windows),
+    #               '--', c='#980043', label='correlation') 
+    # axs[i+1].plot(window_mse['offset'], mean_corr / len(windows),
+    #               '-', c='#c994c7', label='MSE') 
+    # axs[i+1].plot(window_mse['offset'], w_mean_corr / len(windows),
+    #               '--', c='#c994c7', label='MSE') 
+    plt.legend()            
+    plt.show()
 
 def make_fig_4():
     data = np.load("TimeDelayData/dt_correlate_normalized_wgtd.npz")['arr_0']
@@ -155,5 +168,5 @@ def make_fig_4():
 
 # make_fig_1()
 # make_fig_2()
-make_fig_3()
-#make_fig_4()
+# make_fig_3()
+# make_fig_4()
