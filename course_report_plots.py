@@ -16,7 +16,7 @@ rcParams['ytick.minor.size'] = rcParams['xtick.minor.size']
 rcParams['ytick.minor.width'] = rcParams['xtick.minor.width']
 rcParams['ytick.labelsize'] = rcParams['xtick.labelsize']
 
-rcParams['lines.linewidth'] = 2
+rcParams['lines.linewidth'] = 3
 
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Tahoma']
@@ -35,7 +35,7 @@ def make_fig_1(pair_id=120350):
     axs[0].errorbar(data['time'], data['lcA'], data['errA'], fmt='.c')
     axs[0].set_title('Lightcurve A', color='c')
     axs[0].set_ylim(0, (np.max(data['lcA']) + np.max(data['errA'])))
-    axs[1].errorbar(data['time'], data['lcB'], data['errB'], fmt='.m')
+    axs[1].errorbar(data['time'], data['lcB'], data['errB'], fmt='.', c='darkorange')
     axs[1].set_title('Lightcurve B', color='darkorange')
     axs[1].set_ylim(0, (np.max(data['lcB']) + np.max(data['errB'])))
     axs[2].scatter(data['time'], normalize_sig(data['lcA']), marker='o', c='c', edgecolor='None', s=20)
@@ -160,22 +160,23 @@ def make_fig_4():
     data = np.load("TimeDelayData/dt_correlate_normalized_wgtd.npz")['arr_0']
     troubled_data = data[data['est_dt_median'] == 0]
     normal_data = np.setdiff1d(data, troubled_data)
-    fig = plt.figure(figsize=(20,20))
+    fig = plt.figure(figsize=(10, 10))
     plt.errorbar(normal_data['dt'], -normal_data['est_dt_median'], 
-                 yerr=np.sqrt(2. * normal_data['est_dt_std']), 
-                 fmt='.c', alpha=0.5)
-    plt.plot(normal_data['dt'], -normal_data['est_dt_median'], 
-             '.b', label='normal data : %s windows'%(len(normal_data)))
+                 yerr=np.sqrt(normal_data['est_dt_std']), 
+                 fmt='oc', alpha=0.5, 
+                 label='normal data : %s windows'%(len(normal_data)))
     plt.plot(normal_data['dt'], normal_data['dt'], 
-             '-r', alpha=0.8)
+             '-', c='darkorange')
 
     yminmax = np.min(np.abs(data['dt']))
-    plt.axhspan(ymin=-yminmax, ymax=yminmax, facecolor='r', alpha=0.5)
+    plt.axhspan(ymin=-yminmax, ymax=yminmax, facecolor='darkorange', alpha=0.5)
     plt.xlabel('true dt (days)')
     plt.ylabel('median timeshift (days)')
     plt.scatter(troubled_data['dt'], -troubled_data['est_dt_median'], 
-             marker='o', facecolor='k', edgecolor='None', alpha=0.9, 
+             marker='x', facecolor='k', lw=3, #edgecolor='None', s=20, 
                 label='troubled data: %s windows'%(len(troubled_data)))
+    plt.xlim(-200, 200)
+    plt.ylim(-200, 200)
     plt.legend()
 
     if __name__ == "__main__":
@@ -194,6 +195,6 @@ def make_fig_4():
 
 if __name__ == "__main__":
     make_fig_1()
-    make_fig_2()
-    make_fig_3()
+#    make_fig_2()
+#    make_fig_3()
 #    make_fig_4()
