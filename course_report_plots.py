@@ -170,7 +170,7 @@ def make_fig_4():
     plt.ylabel('median timeshift (days)')
     plt.scatter(troubled_data['dt'], -troubled_data['est_dt_median'], 
              marker='o', facecolor='k', edgecolor='None', alpha=0.9, 
-                label='troubled_data: %s windows'%(len(troubled_data)))
+                label='troubled data: %s windows'%(len(troubled_data)))
     plt.legend()
 
     if __name__ == "__main__":
