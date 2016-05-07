@@ -47,8 +47,11 @@ def make_fig_1(pair_id=120350):
     axs[0].set_ylabel('flux (nanomaggies)')
     axs[1].set_ylabel('flux (nanomaggies)')
     axs[2].set_ylabel('flux (normalized)')
-#    plt.show()
-    plt.savefig('Report/Figures/Fig1.jpg')
+
+    if __name__ == "__main__":
+        plt.savefig('Report/Figures/Fig1.jpg')
+    else:
+        plt.show()
 
 def make_fig_2(pair_id=120350):
     gp_modeled_data = np.load("TimeDelayData/gp_resampled_of_windows_with_truth.npz")['arr_0']
@@ -97,8 +100,11 @@ def make_fig_2(pair_id=120350):
     axs[i,0].set_xlabel('time (days)')
     axs[i,1].set_xlabel('time (days)')
 
-#    plt.show()
-    plt.savefig('Report/Figures/Fig2.jpg')
+    if __name__ == "__main__":
+        plt.savefig('Report/Figures/Fig2.jpg')
+    else:
+        plt.show()
+
 
 def make_fig_3(pair_id=120350):
     data_corr = np.load("TimeDelayData/timeshift_correlate_normalized_detrend.npz")['arr_0']
@@ -138,8 +144,12 @@ def make_fig_3(pair_id=120350):
     plt.xlabel('timeshift (days)')
     plt.ylabel('cost value')
     axs[0].legend()
-#    plt.show()
-    plt.savefig('Report/Figures/Fig3.jpg')
+
+    if __name__ == "__main__":
+        plt.savefig('Report/Figures/Fig3.jpg')
+    else:
+        plt.show()
+
 
 def make_fig_4():
     data = np.load("TimeDelayData/dt_correlate_normalized_wgtd.npz")['arr_0']
@@ -162,8 +172,12 @@ def make_fig_4():
              marker='o', facecolor='k', edgecolor='None', alpha=0.9, 
                 label='troubled_data: %s windows'%(len(troubled_data)))
     plt.legend()
-#    plt.show()
-    plt.savefig('Report/Figures/Fig4.jpg')
+
+    if __name__ == "__main__":
+        plt.savefig('Report/Figures/Fig4.jpg')
+    else:
+        plt.show()
+
     # mod_data = np.zeros((len(normal_data),))
     # for i in range(len(normal_data)):
     #     if normal_data['est_dt_median'][i]<0:
@@ -173,7 +187,8 @@ def make_fig_4():
     #         plt.plot(np.abs(normal_data['dt']), np.abs(mod_data), 'ok', lw=0, alpha=0.3)
     #         plt.show()
 
-#make_fig_1()
-make_fig_2()
-#make_fig_3()
-#make_fig_4()
+if __name__ == "__main__":
+    #make_fig_1()
+    make_fig_2()
+    #make_fig_3()
+    #make_fig_4()
