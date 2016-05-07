@@ -8,7 +8,7 @@ rcParams['xtick.major.size'] = 4
 rcParams['xtick.major.width'] = 2
 rcParams['xtick.minor.size'] = 2
 rcParams['xtick.minor.width'] = 2
-rcParams['xtick.labelsize'] = 20
+rcParams['xtick.labelsize'] = 15
 
 rcParams['ytick.major.size'] = rcParams['xtick.major.size']
 rcParams['ytick.major.width'] = rcParams['xtick.major.width']
@@ -23,44 +23,42 @@ rcParams['font.sans-serif'] = ['Tahoma']
 rcParams['font.size'] = 20
 rcParams['text.usetex'] = True
 
+def normalize_sig(sig):
+    return (sig - np.mean(sig)) / np.max(sig)
 
 def make_fig_1(pair_id=120350):
     alpha = 0.9
     data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0']
-#    pair_id = 120258
-    pair_data = data[data['full_pair_id'] == pair_id]
-    true_dt = np.unique(pair_data['dt'])
+    data = data[data['full_pair_id'] == pair_id]
+    true_dt = np.unique(data['dt'])
     fig, axs = plt.subplots(3, 1, figsize=(20, 10), sharex=True, sharey=False)
-    axs[0].errorbar(pair_data['time'], pair_data['lcA'], pair_data['errA'], fmt='.c')
+    axs[0].errorbar(data['time'], data['lcA'], data['errA'], fmt='.c')
     axs[0].set_title('Lightcurve A', color='c')
-#    axs[0].set_ylim(0, 1.0)
-    axs[1].errorbar(pair_data['time'], pair_data['lcB'], pair_data['errB'], fmt='.m')
+    axs[0].set_ylim(0, (np.max(data['lcA']) + np.max(data['errA'])))
+    axs[1].errorbar(data['time'], data['lcB'], data['errB'], fmt='.m')
     axs[1].set_title('Lightcurve B', color='m')
-#    axs[1].set_ylim(0, 1.5)
-    axs[2].scatter(pair_data['time'], normalize_sig(pair_data['lcA']), marker='o', c='c', edgecolor='None', s=20)
-    axs[2].scatter(pair_data['time'], normalize_sig(pair_data['lcB']), marker='o', c='m', edgecolor='None', s=20)
+    axs[1].set_ylim(0, (np.max(data['lcB']) + np.max(data['errB'])))
+    axs[2].scatter(data['time'], normalize_sig(data['lcA']), marker='o', c='c', edgecolor='None', s=20)
+    axs[2].scatter(data['time'], normalize_sig(data['lcB']), marker='o', c='m', edgecolor='None', s=20)
     axs[2].set_title('true time delay : %.2f days'%(true_dt))
-    axs[2].set_ylim(-5, 5)
+    axs[2].set_ylim(-1, 1)
     plt.xlim(-100, 1600)
-    plt.show()
-
-def normalize_sig(sig):
-    return (sig - np.mean(sig)) / np.std(sig)
+    plt.xlabel('time (days)')
+    axs[0].set_ylabel('flux (nanomaggies)')
+    axs[1].set_ylabel('flux (nanomaggies)')
+    axs[2].set_ylabel('flux (normalized)')
+#    plt.show()
+    plt.savefig('Report/Figures/Fig1.jpg')
 
 def make_fig_2(pair_id=120350):
-    #tdc = 1
-    #rungs  = np.arange(0, 1)
-    #pair = 17
-    #full_pair_ids = pair + rungs * 10000 + tdc * 100000
     gp_modeled_data = np.load("TimeDelayData/gp_resampled_of_windows_with_truth.npz")['arr_0']
-#    full_pair_ids = np.unique(gp_modeled_data['pair_id'][gp_modeled_data['pair_id']==120258])
-    full_pair_ids = [pair_id]
     raw_data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0']
-    for pair_id in full_pair_ids:
-        pair_data = raw_data[raw_data['full_pair_id'] == pair_id]
-        windows = np.unique(pair_data['window_id'])
-        pair_model = gp_modeled_data[gp_modeled_data['pair_id'] == pair_id]
-        fig, axs = plt.subplots(len(windows), 2, figsize=(20, 20), sharey=True)
+    pair_data = raw_data[raw_data['full_pair_id'] == pair_id]
+    windows = np.unique(pair_data['window_id'])
+    pair_model = gp_modeled_data[gp_modeled_data['pair_id'] == pair_id]
+    gp_modeled_data = None
+    raw_data = None
+    fig, axs = plt.subplots(len(windows), 2, figsize=(20, 20), sharey=True)
 
     for i, window in enumerate(windows):
         try:
@@ -80,7 +78,6 @@ def make_fig_2(pair_id=120350):
         except Exception, e:
             print "    ", e
     
-        ###  plot_model(pair_id, dt, x, y_pred, sigma, ob)   
         axs[i,0] = plot_data(axs[i,0], pair_id, 0, XA, fA, dfA, "A") #A
         axs[i,0] = plot_model(axs[i,0], pair_id, 0, 
                               window_model['t_eval'],
@@ -97,7 +94,11 @@ def make_fig_2(pair_id=120350):
             
     axs[0,0].set_title("Lightcurve A") 
     axs[0,1].set_title("Lightcurve B")
-    plt.show()
+    axs[i,0].set_xlabel('time (days)')
+    axs[i,1].set_xlabel('time (days)')
+    axs[i,0].set_ylabel('flux (normalized)')
+#    plt.show()
+    plt.savefig('Report/Figures/Fig2.jpg')
 
 def make_fig_3(pair_id=120350):
     data_corr = np.load("TimeDelayData/timeshift_correlate_normalized_detrend.npz")['arr_0']
@@ -119,6 +120,8 @@ def make_fig_3(pair_id=120350):
                     '-', c='#980043', label='correlation')
         axs[i].plot(window_mse['offset'], window_mse['correlation'] / np.max(window_mse['correlation']),
                     '-', c='#c994c7', label='MSE') 
+        axs[i].vlines(x=window_corr['dt'][0], ymin=np.min(window_corr['offset']), ymax=np.max(window_corr['offset']), 
+                      colors='k', linestyle='solid')
             # mean_corr += window_corr['correlation']
             # mean_mse += window_mse['correlation']
             # w_mean_corr += (window_corr['correlation'] / np.max(window_corr['correlation'])) 
@@ -132,8 +135,11 @@ def make_fig_3(pair_id=120350):
     #               '-', c='#c994c7', label='MSE') 
     # axs[i+1].plot(window_mse['offset'], w_mean_corr / len(windows),
     #               '--', c='#c994c7', label='MSE') 
-    plt.legend()            
-    plt.show()
+    plt.xlabel('timeshift (days)')
+    plt.ylabel('cost value')
+    axs[0].legend()
+#    plt.show()
+    plt.savefig('Report/Figures/Fig3.jpg')
 
 def make_fig_4():
     data = np.load("TimeDelayData/dt_correlate_normalized_wgtd.npz")['arr_0']
@@ -156,7 +162,8 @@ def make_fig_4():
              marker='o', facecolor='k', edgecolor='None', alpha=0.9, 
                 label='troubled_data: %s windows'%(len(troubled_data)))
     plt.legend()
-    plt.show()
+#    plt.show()
+    plt.savefig('Report/Figures/Fig4.jpg')
     # mod_data = np.zeros((len(normal_data),))
     # for i in range(len(normal_data)):
     #     if normal_data['est_dt_median'][i]<0:
@@ -166,7 +173,7 @@ def make_fig_4():
     #         plt.plot(np.abs(normal_data['dt']), np.abs(mod_data), 'ok', lw=0, alpha=0.3)
     #         plt.show()
 
-# make_fig_1()
-# make_fig_2()
-# make_fig_3()
-# make_fig_4()
+make_fig_1()
+#make_fig_2()
+#make_fig_3()
+#make_fig_4()
