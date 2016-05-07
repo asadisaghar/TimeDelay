@@ -91,12 +91,12 @@ def make_fig_2(pair_id=120350):
                               window_model['sig_evalB'],
                               np.sqrt(window_model['sig_errB']),
                              "B ") #B
-            
+        axs[i,0].set_ylabel('flux (normalized)')            
     axs[0,0].set_title("Lightcurve A") 
     axs[0,1].set_title("Lightcurve B")
     axs[i,0].set_xlabel('time (days)')
     axs[i,1].set_xlabel('time (days)')
-    axs[i,0].set_ylabel('flux (normalized)')
+
 #    plt.show()
     plt.savefig('Report/Figures/Fig2.jpg')
 
@@ -173,7 +173,7 @@ def make_fig_4():
     #         plt.plot(np.abs(normal_data['dt']), np.abs(mod_data), 'ok', lw=0, alpha=0.3)
     #         plt.show()
 
-make_fig_1()
-#make_fig_2()
+#make_fig_1()
+make_fig_2()
 #make_fig_3()
 #make_fig_4()
