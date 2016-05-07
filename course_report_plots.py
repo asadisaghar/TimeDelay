@@ -166,8 +166,8 @@ def make_fig_4():
 
     yminmax = np.min(np.abs(data['dt']))
     plt.axhspan(ymin=-yminmax, ymax=yminmax, facecolor='r', alpha=0.5)
-    plt.xlabel('dt_true (days)')
-    plt.ylabel('dt_sindow median (days)')
+    plt.xlabel('true dt (days)')
+    plt.ylabel('median timeshift (days)')
     plt.scatter(troubled_data['dt'], -troubled_data['est_dt_median'], 
              marker='o', facecolor='k', edgecolor='None', alpha=0.9, 
                 label='troubled_data: %s windows'%(len(troubled_data)))
@@ -189,6 +189,6 @@ def make_fig_4():
 
 if __name__ == "__main__":
     #make_fig_1()
-    make_fig_2()
+#    make_fig_2()
     #make_fig_3()
-    #make_fig_4()
+    make_fig_4()
