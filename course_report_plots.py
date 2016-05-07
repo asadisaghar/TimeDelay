@@ -36,10 +36,10 @@ def make_fig_1(pair_id=120350):
     axs[0].set_title('Lightcurve A', color='c')
     axs[0].set_ylim(0, (np.max(data['lcA']) + np.max(data['errA'])))
     axs[1].errorbar(data['time'], data['lcB'], data['errB'], fmt='.m')
-    axs[1].set_title('Lightcurve B', color='m')
+    axs[1].set_title('Lightcurve B', color='darkorange')
     axs[1].set_ylim(0, (np.max(data['lcB']) + np.max(data['errB'])))
     axs[2].scatter(data['time'], normalize_sig(data['lcA']), marker='o', c='c', edgecolor='None', s=20)
-    axs[2].scatter(data['time'], normalize_sig(data['lcB']), marker='o', c='m', edgecolor='None', s=20)
+    axs[2].scatter(data['time'], normalize_sig(data['lcB']), marker='o', c='darkorange', edgecolor='None', s=20)
     axs[2].set_title('true time delay : %.2f days'%(true_dt))
     axs[2].set_ylim(-1, 1)
     plt.xlim(-100, 1600)
@@ -111,23 +111,28 @@ def make_fig_3(pair_id=120350):
     data_corr = data_corr[data_corr['pair_id'] == pair_id]
     data_mse = np.load("TimeDelayData/timeshift_mse_normalized_detrend.npz")['arr_0']
     data_mse = data_mse[data_mse['pair_id'] == pair_id]
+    windows = np.unique(data_corr['window_id'])
     # mean_corr = np.zeros(len(data_corr))
     # mean_mse = np.zeros(len(data_mse))
     # w_mean_corr = np.zeros(len(data_corr))
     # w_mean_mse = np.zeros(len(data_mse))
-    windows = np.unique(data_corr['window_id'])
-    print windows
-#    windows = np.unique(pair_mse['window_id'])
     fig, axs = plt.subplots(len(windows), 1, figsize=(20, 20), sharex=True, sharey=True)
     for i, window in enumerate(windows):
         window_corr = data_corr[data_corr['window_id'] == window]
+#        print len(window_corr)
         window_mse = data_mse[data_mse['window_id'] == window]
-        axs[i].plot(window_corr['offset'], window_corr['correlation'] / np.max(window_corr['correlation']), 
-                    '-', c='#980043', label='correlation')
-        axs[i].plot(window_mse['offset'], window_mse['correlation'] / np.max(window_mse['correlation']),
-                    '-', c='#c994c7', label='MSE') 
-        axs[i].vlines(x=window_corr['dt'][0], ymin=np.min(window_corr['offset']), ymax=np.max(window_corr['offset']), 
-                      colors='k', linestyle='solid')
+        # axs[i].plot(window_corr['offset'], window_corr['correlation'] / np.max(window_corr['correlation']), 
+        #             '-', c='#980043', label='correlation')
+        # axs[i].plot(window_mse['offset'], window_mse['correlation'] / np.max(window_mse['correlation']),
+        #             '-', c='#c994c7', label='MSE') 
+        axs[i].plot(window_corr['offset'], normalize_sig(window_corr['correlation']), 
+                    '-', c='c', label='correlation')
+        axs[i].plot(window_mse['offset'], normalize_sig(window_mse['correlation']),
+                    '-', c='darkorange', label='MSE') 
+        axs[i].vlines(x=window_corr['dt'][0], ymin=-1, ymax=1, 
+                      colors='k', linestyle='solid', label='true dt')
+        axs[i].set_ylabel('cost value')
+        axs[i].set_ylim(-1.0, 1.0)
             # mean_corr += window_corr['correlation']
             # mean_mse += window_mse['correlation']
             # w_mean_corr += (window_corr['correlation'] / np.max(window_corr['correlation'])) 
@@ -142,7 +147,7 @@ def make_fig_3(pair_id=120350):
     # axs[i+1].plot(window_mse['offset'], w_mean_corr / len(windows),
     #               '--', c='#c994c7', label='MSE') 
     plt.xlabel('timeshift (days)')
-    plt.ylabel('cost value')
+
     axs[0].legend()
 
     if __name__ == "__main__":
@@ -188,7 +193,7 @@ def make_fig_4():
     #         plt.show()
 
 if __name__ == "__main__":
-    #make_fig_1()
-#    make_fig_2()
-    #make_fig_3()
-    make_fig_4()
+    make_fig_1()
+    make_fig_2()
+    make_fig_3()
+#    make_fig_4()
