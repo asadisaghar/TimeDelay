@@ -64,6 +64,21 @@ and offset for each window.
 Calculates the mean, median and stddev of the maximum correlation
 offsets of all windows for a light curve pair.
 
+## pairsums2dt.py
+
+* Input TimeDelayData/timeshift_correlate_normalized_detrend.measures.pairsums.npz
+* Output TimeDelayData/timeshift_correlate_normalized_detrend.measures.pairsums.ests.npz
+
+Estimate dt from median maximum correlation offset and standard
+deviation of maximum correlation offset.
+
+## measure_metrics.py
+
+* Input: TimeDelayData/pairs_with_truths_and_windows.npz TimeDelayData/timeshift_correlate_normalized_detrend.measures.pairsums.ests.npz
+
+Measure the error of the dt estimations
+
+
 ## Generating measures for all timeshift data
 
     python measure_window_corelations.py TimeDelayData/timeshift_correlate_normalized_detrend.npz true TimeDelayData/timeshift_correlate_normalized_detrend.measures.npz
