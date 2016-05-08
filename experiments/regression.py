@@ -1,4 +1,6 @@
 import sys
+import os
+sys.path[0:0] = [os.path.dirname(os.path.dirname(__file__))]
 import numpy as np
 from matplotlib import pyplot as plt
 import sklearn.linear_model
@@ -17,6 +19,10 @@ input_files = sys.argv[4:-1]
 model_file = sys.argv[-1]
 
 X, y = timedelay.features.load_features(input_fields, output_field, input_files, degree)
+
+trainlen = np.ceil(len(X) * 3 / 4)
+X = X[:trainlen]
+y = y[:trainlen]
 
 m = sklearn.linear_model.LinearRegression()
 m.fit(X, y)
