@@ -44,7 +44,7 @@ def make_a_perfect_model(pairNo, x, X, y):
 
 
 def eval_signal_from_GP_model(window, t_eval):
-    with open("GPModels/%s.pkl" % window, "rd") as f:
+    with open("TimeDelayData/GPModels/%s.pkl" % window, "rd") as f:
         model = pickle.load(f)
     sig_eval, MSE = model.predict(t_eval, eval_MSE=True)
     return sig_eval, MSE

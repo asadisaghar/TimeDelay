@@ -64,7 +64,7 @@ for pair_id in pair_ids:
                                                                                                    thetaL=tau,
                                                                                                    thetaU=tau) # image A
 
-            with open("GPModels/%sA.pkl"%(window), "wb") as f:
+            with open("TimeDelayData/GPModels/%sA.pkl"%(window), "wb") as f:
                 pickle.dump(gpA, f)
 
             # find the best-fit model for LC B
@@ -78,7 +78,7 @@ for pair_id in pair_ids:
                                                                                                    theta0=sig,
                                                                                                    thetaL=tau,
                                                                                                    thetaU=tau) # image B
-            with open("GPModels/%sB.pkl"%(window), "wb") as f:
+            with open("TimeDelayData/GPModels/%sB.pkl"%(window), "wb") as f:
                 pickle.dump(gpB, f)
         except Exception, e:
             print "    ", e
