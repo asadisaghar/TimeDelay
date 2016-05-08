@@ -7,7 +7,7 @@ import cPickle as pickle
 import timedelay.features
 
 if len(sys.argv) < 2:
-    print """Usage: regression.py input_field1,...,input_fieldN degree output_field file1 ... fileM model"""
+    print """Usage: predict.py input_field1,...,input_fieldN output_field file1 ... fileM model"""
     sys.exit(-1)
 
 input_fields = sys.argv[1].split(",")
@@ -16,10 +16,17 @@ output_field = sys.argv[3]
 input_files = sys.argv[4:-1]
 model_file = sys.argv[-1]
 
+with open(model_file, "rd") as f:
+    m = pickle.load(f)
+
 X, y = timedelay.features.load_features(input_fields, output_field, input_files, degree)
 
-m = sklearn.linear_model.LinearRegression()
-m.fit(X, y)
+ypred = m.predict(X)
 
-with open(model_file, "wb") as f:
-    pickle.dump(m, f)
+import matplotlib.pyplot as plt
+
+plt.plot(y, ypred, '.g')
+plt.plot(y, y, '-r')
+plt.ylim(-150, 150)
+plt.xlim(-150, 150)
+plt.show()
