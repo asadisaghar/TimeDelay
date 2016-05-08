@@ -54,7 +54,8 @@ comparison.
 * Input: timeshift_{correlate,ng_correlate,mse}_normalized[_detrend].npz
 * Output: timeshift_{correlate,ng_correlate,mse}_normalized[_detrend].measures.npz
 
-Finds the maximum correlation and records its magnitude and offset for each window.
+Finds the maximum correlation or minimum mse and records its magnitude
+and offset for each window.
 
 ## sum_pair_corelation_measures.py
 * Input: timeshift_{correlate,ng_correlate,mse}_normalized[_detrend].measures.npz
