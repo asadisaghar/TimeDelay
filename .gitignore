@@ -70,3 +70,5 @@ target/
 #TeX byproduct
 **/*.aux
 **/*.log
+
+TimeDelayData

@@ -12,7 +12,9 @@ res = np.zeros(len(pair_ids), dtype=[('pair_id', 'f4'), ('est_dt_mean', 'f4'), (
 for j, pair_id in enumerate(pair_ids):
     print "%s: %s of %s" % (pair_id, j, len(pair_ids))
 
+    # Remove windows that give no meaningful correlation
     pair_data = data[data['pair_id'] == pair_id]
+    pair_data = pair_data[pair_data['est_dt'] != 0]
 
     res['pair_id'][j] = pair_id
     res['est_dt_mean'][j] = pair_data['est_dt'].mean()

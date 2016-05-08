@@ -9,4 +9,8 @@ res['dt'] = x['dt']
 res['est'] = x['est_dt_median'] + x['est_dt_std'] * np.sign(x['est_dt_median'])
 res['est_err'] = x['est_dt_std']
 
+mse = ((res['dt'] - res['est'])**2).sum()/len(res)
+
+print "MSE: %s" % mse
+
 np.savez(sys.argv[2], res)
