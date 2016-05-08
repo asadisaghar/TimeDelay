@@ -6,7 +6,7 @@ import sys
 x = np.load(sys.argv[1])['arr_0']
 
 dts = np.unique(x['dt'])
-res = np.zeros(len(dts), dtype=[(name, 'f4') for name in ['dt', 'est_dt_mean', 'est_dt_median', 'est_dt_std']])
+res = np.zeros(len(dts), dtype=[(name, 'f4') for name in ['dt', 'est_dt_mean', 'est_dt_median', 'est_dt_std', 'est_dt_wgtd_mean']])
 res['dt'] = dts
 
 def findcluster(x):
@@ -22,5 +22,6 @@ def clusters_for_column(res, col):
 clusters_for_column(res, 'est_dt_mean')
 clusters_for_column(res, 'est_dt_median')
 clusters_for_column(res, 'est_dt_std')
+clusters_for_column(res, 'est_dt_wgtd_mean')
 
 np.savez(sys.argv[2], res)
