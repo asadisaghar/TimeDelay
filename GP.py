@@ -103,8 +103,8 @@ for pair_id in pair_ids:
     if do_plot:
         figA.suptitle("Lightcurve A") 
         figB.suptitle("Lightcurve B")
-        figA.savefig("pair" + str(pair_id) + "_A.png")
-        figB.savefig("pair" + str(pair_id) + "_B.png")
+#        figA.savefig("pair" + str(pair_id) + "_A.png")
+#        figB.savefig("pair" + str(pair_id) + "_B.png")
 
 plt.show()
 
