@@ -1,10 +1,11 @@
 import numpy as np
+import sys
 
 def measure_metrics(dataset, measurementset):
-    fulldata = np.load("TimeDelayData/%s"%(dataset))['arr_0']
-    N_data = np.unique(fulldata['pair_id']).shape
-    data = np.load("TimeDelayMeasurements/%s"%(measurementset))['arr_0']
-    N_measured = np.unique(data['pair_id']).shape
+    fulldata = np.load(dataset)['arr_0']
+    N_data = len(np.unique(fulldata['full_pair_id']))
+    data = np.load(measurementset)['arr_0']
+    N_measured = len(np.unique(data['pair_id']))
     
     dt_trues = data['dt']
     dt_ests = data['est']
@@ -29,4 +30,4 @@ def measure_metrics(dataset, measurementset):
     return f, chi2, P, A
 
 if __name__ == '__main__':
-    call_some_function(*sys.argv[1:])
+    measure_metrics(*sys.argv[1:])
