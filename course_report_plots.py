@@ -31,15 +31,15 @@ def make_fig_1(pair_id=120350):
     data = np.load("TimeDelayData/pairs_with_truths_and_windows.npz")['arr_0']
     data = data[data['full_pair_id'] == pair_id]
     true_dt = np.unique(data['dt'])
-    fig, axs = plt.subplots(3, 1, figsize=(10, 15), sharex=True, sharey=False)
-    axs[0].errorbar(data['time'], data['lcA'], data['errA'], fmt='.c')
+    fig, axs = plt.subplots(3, 1, figsize=(8, 13), sharex=True, sharey=False)
+    axs[0].errorbar(data['time'], data['lcA'], data['errA'], fmt='oc')
     axs[0].set_title('Lightcurve A', color='c')
     axs[0].set_ylim(0, (np.max(data['lcA']) + np.max(data['errA'])))
-    axs[1].errorbar(data['time'], data['lcB'], data['errB'], fmt='.', c='darkorange')
+    axs[1].errorbar(data['time'], data['lcB'], data['errB'], fmt='o', c='darkorange')
     axs[1].set_title('Lightcurve B', color='darkorange')
     axs[1].set_ylim(0, (np.max(data['lcB']) + np.max(data['errB'])))
-    axs[2].scatter(data['time'], normalize_sig(data['lcA']), marker='o', c='c', edgecolor='None', s=20, alpha=0.6)
-    axs[2].scatter(data['time'], normalize_sig(data['lcB']), marker='o', c='darkorange', edgecolor='None', s=20, alpha=0.6)
+    axs[2].scatter(data['time'], normalize_sig(data['lcA']), marker='o', c='c', edgecolor='None', s=40, alpha=0.6)
+    axs[2].scatter(data['time'], normalize_sig(data['lcB']), marker='o', c='darkorange', edgecolor='None', s=40, alpha=0.6)
     axs[2].set_title('true time delay : %.2f days'%(true_dt))
     axs[2].set_ylim(-1, 1)
     plt.xlim(-100, 1600)
@@ -61,7 +61,7 @@ def make_fig_2(pair_id=120350):
     pair_model = gp_modeled_data[gp_modeled_data['pair_id'] == pair_id]
     gp_modeled_data = None
     raw_data = None
-    fig, axs = plt.subplots(len(windows), 2, figsize=(10, 15), sharey=True)
+    fig, axs = plt.subplots(len(windows), 2, figsize=(8, 13), sharey=True)
 
     for i, window in enumerate(windows):
         try:
@@ -71,12 +71,12 @@ def make_fig_2(pair_id=120350):
             XA = window_data['time'].T
             XA = XA.reshape((len(XA), 1))
             fA = (window_data['lcA'] - np.mean(window_data['lcA'])) / np.std(window_data['lcA'])
-            dfA = (window_data['errA'])
+            dfA = (window_data['errA'])# - np.mean(window_data['errA'])) / np.std(window_data['errA'])
 
             XB = window_data['time'].T
             XB = XB.reshape((len(XB), 1))
             fB = (window_data['lcB'] - np.mean(window_data['lcB'])) / np.std(window_data['lcB'])
-            dfB = (window_data['errB'])
+            dfB = (window_data['errB'])# - np.mean(window_data['errB'])) / np.std(window_data['errB'])
 
         except Exception, e:
             print "    ", e
@@ -229,7 +229,7 @@ def make_fig_6():
 if __name__ == "__main__":
 #    make_fig_1(pair_id=120354)
 #    make_fig_2(pair_id=120354)
-    make_fig_3(pair_id=120354) #3.1
+#    make_fig_3(pair_id=120354) #3.1
 #    make_fig_3(pair_id=120300) #3.2
 #    make_fig_4()
 #    make_fig_6()

@@ -7,11 +7,10 @@ import cPickle as pickle
 from matplotlib.mlab import frange
 
 def make_a_model(pairNo, x, X, y, dy, theta0=1e-3, thetaL=1e-3, thetaU=1):
-    """Make a GaussianProcess model for noisy data"""
-
-    # If the original experiment is known to be infinitely
-    # differentiable (smooth), then one should use the
-    # squared-exponential correlation model.
+    """Make a GaussianProcess model for noisy data
+    If the original experiment is known to be infinitely
+    differentiable (smooth), then one should use the
+    squared-exponential correlation model."""
     gp = GaussianProcess(corr='squared_exponential',
                          regr = "quadratic",
                          theta0 = theta0,
