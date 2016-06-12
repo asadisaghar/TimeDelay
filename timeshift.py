@@ -10,17 +10,50 @@ import math
 def timeshift_mse(x1, x2):
     res = np.zeros(len(x1) * 2 - 1)
     xlen = len(x1)
-    off = xlen / 2
-    for i in xrange(-xlen+1, xlen):
+    idxs = np.arange(-xlen+1, xlen, 1)
+    for i in idxs:
         left = max(0, -i)
         right = max(0, i)
         xr = x1[left:xlen-right] - x2[right:xlen-left]
         res[i] = np.sum(xr**2) / len(xr)
-    return res
+    return idxs
 
+def timeshift_pearson(x1, x2):
+    res = np.zeros(len(x1) * 2 - 1 - 2)
+    xlen = len(x1)
+    idxs = np.arange(-xlen+2, xlen-1, 1)
+    for i in idxs:
+        left = max(0, -i)
+        right = max(0, i)
+        x1i = x1[left:xlen-right]
+        x2i = x2[right:xlen-left]
+        res[i] = scipy.stats.pearsonr(x1i, x2i)[0]
+        assert not np.isnan(res[i])
+    return idxs, res
 
 def timeshift_correlate(sig1, sig2):
-    return signal.correlate(sig1, sig2, mode="full")
+    return np.arange(-xlen+1, xlen, 1), signal.correlate(sig1, sig2, mode="full")
+
+# def timeshift_pearson_window(x1, x2, window=0.5):
+#     xlen = len(x1)
+#     window=int(np.floor(xlen * window))
+#     res = np.zeros((xlen-window) * 2 - 1)
+#     for i in xrange(-xlen+window+1, xlen-window):
+#         left = max(0, -i)
+#         right = max(0, i)
+#         l = np.abs(right - left)
+#         offset = np.floor((l - window) / 2)
+
+#         if l < window:
+#             import pdb
+#             pdb.set_trace()
+
+#         # x1i = x1[left:xlen-right][offset:][:window]
+
+#         x1i = x1[left+offset:left+offset+window]
+#         x2i = x2[right+offset:right+offset+window]
+#         res[i] = scipy.stats.pearsonr(x1i, x2i)[0]
+#     return res
 
 def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False, negative = False):
     output = None
@@ -39,9 +72,9 @@ def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False, negat
             sigB = scipy.signal.detrend(sigB)
 
         if negative:
-            corr = correlator(sigB, sigA)
+            off, corr = correlator(sigB, sigA)
         else:
-            corr = correlator(sigA, sigB)
+            off, corr = correlator(sigA, sigB)
 
         res = np.zeros(len(corr), dtype=[('pair_id', 'f4'), ('window_id', 'f4'), ('offset', 'f4'), ('correlation', 'f4'), ('dt', '<f4'), ('tau', '<f4'), ('sig', '<f4'), ('m1', '<f4'), ('m2', '<f4')])
 
@@ -49,7 +82,7 @@ def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False, negat
         for name in ('pair_id', 'dt', 'tau', 'sig', 'm1', 'm2'):
             res[name] = data[name][data['window_id']==window][0]
 
-        res['offset'] = dt * np.arange(-len(sigA)+1, len(sigA), 1)
+        res['offset'] = dt * off
         res['correlation'] = corr
 
         if output is None:
@@ -59,29 +92,58 @@ def timeshift(data, correlator, dt = 0.1, windows = None, detrend = False, negat
     return output
 
 argv = sys.argv[1:]
-if not argv:
-    print """Usage:
-    python timeshift.py METHOD OUTPUT.npz
-    python timeshift.py METHOD OUTPUT.npz BUCKET TOTAL_BUCKETS
+
+args = []
+kws = {}
+for arg in argv:
+    if arg.startswith('--'):
+        arg = arg[2:]
+        if '=' in arg:
+            key, value = arg.split('=', 1)
+            kws[key] = value
+        else:
+            kws[arg] = True
+    else:
+        args.append(arg)
+
+if len(args) < 3 or 'help' in kws:
+    print """Usage: python timeshift.py OPTIONS METHOD INPUT.npz OUTPUT.npz
+Available options:
+    --bucket BUCKET_NR
+    --buckets TOTAL_NR_OF_BUCKETS
+    --detrend
+    --negative
 
 If buckets are specified, divide the data into that many buckets, and
 only process the specified bucket.
 
-METHOD is either mse or correlate, METHOD could be mse-detrend or
-correlate-detrend to use detrend after normalization.
+Available methods
+    mse
+    correlate
+    pearson
+
+Example:
+
+python timeshift.py \
+  --detrend \
+  mse \
+  TimeDelayData/gp_resampled_of_windows_with_truth.npz \
+  TimeDelayData/timeshift_mse_normalized_detrend.measures.npz
 """
     sys.exit(-1)
 
-method = argv[0]
-output = argv[1]
+method = args[0]
+input = args[1]
+output = args[2]
 
 bucket = None
 buckets = None
-if len(argv) > 2:
-    bucket = int(argv[2])
-    buckets = int(argv[3])
+if 'bucket' in kws:
+    bucket = int(kws['bucket'])
+if 'buckets' in kws:
+    buckets = int(kws['buckets'])
 
-data = np.load("TimeDelayData/gp_resampled_of_windows_with_truth.npz")['arr_0']
+data = np.load(input)['arr_0']
 
 windows = None
 if buckets is not None:
@@ -93,17 +155,15 @@ if buckets is not None:
     windows = windows[start_win:end_win]
     print "Working on subset: %s - %s (%s total)" % (windows[0], windows[-1], end_win - start_win)
 
-if method == 'mse':
-    data = timeshift(data, timeshift_mse, windows=windows)
-elif method == 'correlate':
-    data = timeshift(data, timeshift_correlate, windows=windows)
-elif method == 'mse-detrend':
-    data = timeshift(data, timeshift_mse, windows=windows, detrend=True)
-elif method == 'correlate-detrend':
-    data = timeshift(data, timeshift_correlate, windows=windows, detrend=True)
-elif method == 'negative-correlate':
-    data = timeshift(data, timeshift_correlate, windows=windows, detrend=True, negative = True)
-else:
-    raise Exception("Unknown correlation mode")
+method = {'mse': timeshift_mse,
+          'correlate': timeshift_correlate,
+          'pearson': timeshift_pearson}[method]
+
+data = timeshift(
+    data,
+    method,
+    windows=windows,
+    detrend=kws.get('detrend', False),
+    negative = kws.get('negative', False))
 
 np.savez(output, data)

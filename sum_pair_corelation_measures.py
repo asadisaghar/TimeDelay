@@ -14,7 +14,9 @@ for j, pair_id in enumerate(pair_ids):
 
     # Remove windows that give no meaningful correlation
     pair_data = data[data['pair_id'] == pair_id]
-    pair_data = pair_data[pair_data['est_dt'] != 0]
+    filtered_pair_data = pair_data[pair_data['est_dt'] != 0]
+    if len(filtered_pair_data) > 0:
+        pair_data = filtered_pair_data
 
     res['pair_id'][j] = pair_id
     res['est_dt_mean'][j] = pair_data['est_dt'].mean()
