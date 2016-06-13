@@ -1,0 +1,17 @@
+\frametitle{Dataset - smooth (Gaussian processes)}
+\begin{verbatim}
+
+    gp = GaussianProcess(corr = "squared_exponential",
+                         regr = "quadratic",
+                         theta0 = sigma,
+                         thetaL = tau,
+                         thetaU = tau,
+                         nugget = (dy / y) ** 2,
+                         random_start=500)
+
+
+    gp.fit(X, y)
+
+    y_pred, MSE = gp.predict(x, eval_MSE=True)
+
+  \end{verbatim}
